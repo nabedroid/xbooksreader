@@ -1,0 +1,98 @@
+{
+  "books": {
+    "1000001": {
+      "id": 1000001,
+      "title": "book_title1", "yomikata": "book_yomikata1",
+      "originals": [4000001],
+      "tags": [5000001],
+      "writers": [6000001],
+      "evalution": 3,
+      "update": "2023-09-26T12:34:56+09:00",
+      "path": "",
+      "bookmarks": [],
+      "favorites": false,
+      "nextBook": 1000002,
+      "thumbnail": "book_thumbnail1.png"
+    },
+    "1000002": {
+      "id": 1000002, "title": "book_title2", "yomikata": "book_yomikata2",
+      "originals": [4000001],
+      "tags": [5000001],
+      "writers": [6000001],
+      "evalution": 2,
+      "update": "2023-09-26T12:34:56+09:00",
+      "path": "",
+      "bookmarks": [],
+      "favorites": false,
+      "previousBook": 1000001,
+      "nextBook": 1000003,
+      "thumbnail": "book_thumbnail2.png"
+    },
+    "1000003": {
+      "id": 1000003, "title": "book_title3", "yomikata": "book_yomikata3",
+      "originals": [4000001],
+      "tags": [5000001],
+      "writers": [6000001],
+      "evalution": 3,
+      "update": "2023-09-26T12:34:56+09:00",
+      "path": "",
+      "bookmarks": [],
+      "favorites": false,
+      "previousBook": 1000002,
+      "thumbnail": "book_thumbnail3.png"
+    },
+    "1000004": {
+      "id": 1000004, "title": "book_title4", "yomikata": "book_yomikata4",
+      "originals": [4000001],
+      "tags": [5000001],
+      "writers": [6000001],
+      "evalution": 3,
+      "update": "2023-09-26T12:34:56+09:00",
+      "path": "",
+      "bookmarks": [],
+      "favorites": false,
+      "thumbnail": "book_thumbnail4.png"
+    },
+    "1000005": {
+      "id": 1000005, "title": "book_title5", "yomikata": "book_yomikata5",
+      "originals": [4000001],
+      "tags": [5000001],
+      "writers": [6000001],
+      "evalution": 5,
+      "update": "2023-09-26T12:34:56+09:00",
+      "path": "",
+      "bookmarks": [],
+      "favorites": false,
+      "previousBook": -1,
+      "nextBook": -1,
+      "thumbnail": "book_thumbnail5.png"
+    }
+  },
+  "characters": {
+    "2000001": {"id": 2000001, "name": "character_name", "yomikata": "character_name_yomikata", "originals": [4000001]}
+  },
+  "circles": {
+    "3000001": {"id": 3000001, "name": "circle_name", "yomikata": "circle_name_yomikata", "writers": [6000001]}
+  },
+  "originals": {
+    "4000001": {"id": 4000001, "name": "original_name", "yomikata": "original_name_yomikata"}
+  },
+  "tags": {
+    "5000001": {"id": 5000001, "name": "tag_name1", "yomikata": "tag_name_yomikata1"},
+    "5000002": {"id": 5000002, "name": "tag_name2", "yomikata": "tag_name_yomikata2", "relations":  []},
+    "5000003": {"id": 5000003, "name": "tag_name3", "yomikata": "tag_name_yomikata3", "relations":  [5000003]},
+    "5000004": {"id": 5000004, "name": "tag_name4", "yomikata": "tag_name_yomikata4", "relations":  [5000004]},
+    "5000005": {"id": 5000005, "name": "tag_name5", "yomikata": "tag_name_yomikata5", "relations":  [5000006, 5000007]},
+    "5000006": {"id": 5000006, "name": "tag_name6", "yomikata": "tag_name_yomikata6", "relations":  [5000005, 5000007]},
+    "5000007": {"id": 5000007, "name": "tag_name7", "yomikata": "tag_name_yomikata7", "relations":  [5000005, 5000006]}
+  },
+  "writers": {
+    "6000001": {"id": 6000001, "name": "writer_name", "yomikata": "writer_name_yomikata"}
+  },
+  "book_next_id": 1000006,
+  "character_next_id": 2000002,
+  "circle_next_id": 3000002,
+  "original_next_id": 4000002,
+  "tag_next_id": 5000008,
+  "writer_next_id": 6000002
+}

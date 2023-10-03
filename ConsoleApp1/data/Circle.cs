@@ -1,0 +1,56 @@
+﻿using System.ComponentModel;
+using System.Runtime.CompilerServices;
+
+public class Circle : INotifyPropertyChanged {
+  public event PropertyChangedEventHandler PropertyChanged;
+
+  private void NotifyPropertyChanged([CallerMemberName] string propertyName = "") {
+    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+  }
+
+  public Circle() {}
+
+  private int _id;
+  public int Id {
+    get { return this._id; }
+    set {
+      if (this._id != value) {
+        this._id = value;
+        this.NotifyPropertyChanged();
+      }
+    }
+  }
+
+  private string _name;
+  public string Name {
+    get { return this._name; }
+    set {
+      if (this._name != value) {
+        this._name = value;
+        this.NotifyPropertyChanged();
+      }
+    }
+  }
+
+  private string _yomikata;
+  public string Yomikata {
+    get { return this._yomikata; }
+    set {
+      if (this._yomikata != value) {
+        this._yomikata = value;
+        this.NotifyPropertyChanged();
+      }
+    }
+  }
+
+  private int[] _writers;
+  public int[] Writers {
+    get { return this._writers; }
+    set {
+      if (this._writers != value) {
+        this._writers = value;
+        this.NotifyPropertyChanged();
+      }
+    }
+  }
+}
