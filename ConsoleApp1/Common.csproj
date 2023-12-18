@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{ABF0A4A5-033E-4AEA-A648-41E8CF92B8B6}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>ConsoleApp1</RootNamespace>
     <AssemblyName>ConsoleApp1</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
@@ -51,6 +51,12 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ImageProcessor, Version=2.9.1.225, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ImageProcessor.2.9.1\lib\net452\ImageProcessor.dll</HintPath>
+    </Reference>
+    <Reference Include="ImageProcessor.Plugins.WebP, Version=1.3.0.152, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ImageProcessor.Plugins.WebP.1.3.0\lib\net452\ImageProcessor.Plugins.WebP.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=7.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.7.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
@@ -73,9 +79,7 @@
     <Reference Include="System.Text.Encodings.Web, Version=7.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Text.Encodings.Web.7.0.0\lib\net462\System.Text.Encodings.Web.dll</HintPath>
     </Reference>
-    <Reference Include="System.Text.Json, Version=7.0.0.3, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Text.Json.7.0.3\lib\net462\System.Text.Json.dll</HintPath>
-    </Reference>
+    <Reference Include="System.Text.Json, Version=7.0.0.3, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL" />
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
@@ -90,16 +94,40 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="data\Character.cs" />
-    <Compile Include="data\Tag.cs" />
-    <Compile Include="data\Writer.cs" />
-    <Compile Include="data\Original.cs" />
-    <Compile Include="data\Circle.cs" />
-    <Compile Include="data\Book.cs" />
-    <Compile Include="data\XBooksData.cs" />
-    <Compile Include="io\XBookDataIO.cs" />
+    <Compile Include="Collections\ObservableDictionary.cs" />
+    <Compile Include="Data\Character.cs" />
+    <Compile Include="Data\ITreeNodeObservableItem.cs" />
+    <Compile Include="Data\PropertyChangedEventArgsWithValue.cs" />
+    <Compile Include="Data\SearchPath.cs" />
+    <Compile Include="Data\Tag.cs" />
+    <Compile Include="Data\Writer.cs" />
+    <Compile Include="Data\Original.cs" />
+    <Compile Include="Data\Circle.cs" />
+    <Compile Include="Data\Book.cs" />
+    <Compile Include="Data\XBooksData.cs" />
+    <Compile Include="Filter\AbstractBookFilter.cs" />
+    <Compile Include="Filter\BookFilterFavorite.cs" />
+    <Compile Include="Filter\BookFilterCreateDate.cs" />
+    <Compile Include="Filter\BookFilterViewDate.cs" />
+    <Compile Include="Filter\BookFilterPath.cs" />
+    <Compile Include="Filter\BookFilterBook.cs" />
+    <Compile Include="Filter\BookFilterWriter.cs" />
+    <Compile Include="Filter\BookFilterOriginal.cs" />
+    <Compile Include="Filter\BookFilterCircle.cs" />
+    <Compile Include="Filter\BookFilterCharacter.cs" />
+    <Compile Include="Filter\BookFilterTag.cs" />
+    <Compile Include="Filter\BookFilterOr.cs" />
+    <Compile Include="Filter\BookFilterCount.cs" />
+    <Compile Include="Filter\BookFilterEvalution.cs" />
+    <Compile Include="Filter\BookFilterAnd.cs" />
+    <Compile Include="Filter\BookFilterDecorator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Com\IFELanguage.cs" />
+    <Compile Include="Utils\FileUtil.cs" />
+    <Compile Include="Utils\ImageUtil.cs" />
+    <Compile Include="Com\FELanguage.cs" />
+    <Compile Include="Utils\StringUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -116,6 +144,9 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Model\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

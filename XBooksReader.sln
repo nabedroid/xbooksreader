@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.7.34024.191
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XBooksReader", "XBooksReader\XBooksReader.csproj", "{9C102554-45A6-47CC-ADBD-9FB99ACA42A5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{ABF0A4A5-033E-4AEA-A648-41E8CF92B8B6} = {ABF0A4A5-033E-4AEA-A648-41E8CF92B8B6}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "ConsoleApp1\Common.csproj", "{ABF0A4A5-033E-4AEA-A648-41E8CF92B8B6}"
 EndProject
@@ -13,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ソリューション項目
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsFormsApp1", "WindowsFormsApp1\WindowsFormsApp1.csproj", "{EFA04671-6691-4517-AD1D-9D6CF56EFE1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,9 +37,16 @@ Global
 		{82D78E9F-4B10-4760-8C10-BFC6B577639F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82D78E9F-4B10-4760-8C10-BFC6B577639F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82D78E9F-4B10-4760-8C10-BFC6B577639F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFA04671-6691-4517-AD1D-9D6CF56EFE1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFA04671-6691-4517-AD1D-9D6CF56EFE1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFA04671-6691-4517-AD1D-9D6CF56EFE1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFA04671-6691-4517-AD1D-9D6CF56EFE1A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EFA04671-6691-4517-AD1D-9D6CF56EFE1A} = {185934A5-E07A-4489-BF38-51010AF8B48A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {347DEF4F-2085-4450-80D7-89C68025AFFE}
