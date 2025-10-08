@@ -43,20 +43,21 @@ namespace Nabedroid.XBooksReader.FormsControlLibrary {
       this._treeView = new System.Windows.Forms.TreeView();
       this.SuspendLayout();
       // 
-      // treeView1
+      // _treeView
       // 
       this._treeView.Dock = System.Windows.Forms.DockStyle.Fill;
       this._treeView.Location = new System.Drawing.Point(0, 0);
-      this._treeView.Name = "TreeView";
+      this._treeView.Name = "_treeView";
       this._treeView.Size = new System.Drawing.Size(312, 410);
       this._treeView.TabIndex = 0;
       // 
-      // UserControl2
+      // AbstractSearchTabTreeView
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+      this.BackColor = System.Drawing.SystemColors.Control;
       this.Controls.Add(this._treeView);
-      this.Name = "UserControl2";
+      this.Name = "AbstractSearchTabTreeView";
       this.Size = new System.Drawing.Size(312, 410);
       this.ResumeLayout(false);
 

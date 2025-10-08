@@ -20,9 +20,9 @@ namespace Nabedroid.XBooksReader.FormsControlLibrary {
     public SearchTabView() {
       InitializeComponent();
       // タブ要素作成
-      this._homeTreeView = new SearchTabHomeTreeView();
-      this._folderTreeView = new SearchTabFolderTreeView();
-      this._tagTreeView = new SearchTabTagTreeView();
+      this._homeTreeView = new SearchTabHomeTreeView() { Dock = DockStyle.Fill };
+      this._folderTreeView = new SearchTabFolderTreeView() { Dock = DockStyle.Fill };
+      this._tagTreeView = new SearchTabTagTreeView() { Dock = DockStyle.Fill };
 
       this._homeTreeView.TreeViewAfterSelect += this._TreeViewNodeHomeAfterSelect;
       this._folderTreeView.TreeViewAfterSelect += this._TreeViewNodeFolderAfterSelect;

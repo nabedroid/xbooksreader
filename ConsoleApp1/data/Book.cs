@@ -21,16 +21,18 @@ namespace Nabedroid.XBooksReader.Common {
     private List<int> _tags = new List<int>();
     private List<int> _circles = new List<int>();
     private List<int> _writers = new List<int>();
-    private int _evalution { get; set; }
-    private DateTimeOffset _viewDate { get; set; } = DateTimeOffset.MinValue;
-    private DateTimeOffset _createDate { get; set; } = DateTimeOffset.MinValue;
-    private string _path { get; set; }
-    private List<int> _bookmarks { get; set; } = new List<int>();
-    private bool _favorite { get; set; }
-    private int _previousBook { get; set; }
-    private int _nextBook { get; set; }
-    private int _count { get; set; }
-    private string _thumbnail { get; set; }
+    private int _evalution;
+    private DateTimeOffset _viewDate = DateTimeOffset.MinValue;
+    private DateTimeOffset _createDate = DateTimeOffset.MinValue;
+    private string _path;
+    private List<int> _bookmarks = new List<int>();
+    private bool _favorite;
+    private int _previousBook;
+    private int _nextBook;
+    private int _count;
+    private string _thumbnail;
+    private string _fileType;
+    private AbstractBookImageFactory _bookImageFactory;
 
     public int Id {
       get { return this._id; }
@@ -212,6 +214,23 @@ namespace Nabedroid.XBooksReader.Common {
       }
     }
 
+    public string FileType {
+      get { return _fileType; }
+      set {
+        if (this._fileType != value) {
+          this._fileType = value;
+          this.NotifyPropertyChanged();
+        }
+      }
+    }
+
+    public AbstractBookImageFactory GetBookImageFactory() {
+      if (_bookImageFactory == null) {
+        _bookImageFactory = new Factory(_path).BookImageFactory;
+      }
+      return _bookImageFactory;
+    }
+
     public override string ToString() {
       string charas = string.Join(",", _characters);
       string oris = string.Join(",", _originals);
@@ -225,7 +244,8 @@ namespace Nabedroid.XBooksReader.Common {
         $"Characters: [{charas}] Origins: [{oris}] Tags: [{tags}] Circles: [{cirs}] Writers: [{wris}] BookMarks: [{marks}]" +
         $"Evalution: {_evalution} Favorite: {_favorite} " +
         $"ViewDate: {_viewDate} CreateDate: {_createDate} " +
-        $"PreviousBook: {_previousBook} NextBook: {_nextBook} Count: {_count} ";
+        $"PreviousBook: {_previousBook} NextBook: {_nextBook} Count: {_count} " +
+        $"Thumbnail: {_thumbnail}";
     }
 
     string ITreeNodeObservableItem.Key { get { return this._id.ToString(); } }
@@ -233,9 +253,9 @@ namespace Nabedroid.XBooksReader.Common {
     string ITreeNodeObservableItem.SortKey { get { return this._kana; } }
 
     public List<string> GetBookImageFiles() {
-      return FileUtil.GetDirectoryImageFiles(_path);
+      // return FileUtil.GetDirectoryImageFiles(_path);
+      return GetBookImageFactory().GetImagePathList();
     }
-
 
   }
 

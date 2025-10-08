@@ -3,7 +3,7 @@ using System;
 
 namespace Nabedroid.XBooksReader.FormsControlLibrary {
 
-  internal interface IBookShowPanelControl {
+  internal interface IBookShowPanelCommand {
     Book Book { get; set; }
     void Fit(object sender, EventArgs e);
   }

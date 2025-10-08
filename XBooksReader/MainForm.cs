@@ -1,20 +1,21 @@
 ﻿using Nabedroid.XBooksReader.Common;
 using Nabedroid.XBooksReader.FormsControlLibrary;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Windows.Forms;
 
 namespace Nabedroid.XBooksReader {
   public partial class MainForm : Form {
     private XBooksData _xBooksData;
     private IMainFormControl _control;
-    private BookShowPanel _bookShowPanel;
+    private BookViewControl _bookViewControl;
 
     public MainForm() {
       InitializeComponent();
-      this._bookShowPanel = new BookShowPanel();
-      this.splitContainer1.Panel2.Controls.Add(this._bookShowPanel);
-      this._bookShowPanel.Dock = DockStyle.Fill;
-      this._bookShowPanel.Visible = false;
+      this._bookViewControl = new BookViewControl();
+      this.splitContainer1.Panel2.Controls.Add(this._bookViewControl);
+      this._bookViewControl.Dock = DockStyle.Fill;
+      this._bookViewControl.Visible = false;
 
       _control = new MainFormControl(this);
 
@@ -27,25 +28,25 @@ namespace Nabedroid.XBooksReader {
       this.toolStripMenuItemUpdate.Click += _control.UpdateMenuClick;
       this.toolStripMenuItemAddDirectory.Click += _control.AddDirectoryMenuClick;
       this.toolStripMenuItemExit.Click += _control.ExitMenuClick;
-      this.bookListPanel1.BookMouseClick += _control.BookClick;
+      this.bookListPanel1.BookButtonClick += _control.BookClick;
     }
 
-    public void SetBooks(List<Book> books) {
+    public void SetBooks(ObservableCollection<Book> books) {
       this.bookListPanel1.Books = books;
     }
 
     public void BookShowPanelVisible(bool visible) {
-      _bookShowPanel.Visible = visible;
+      _bookViewControl.Visible = visible;
       BookListPanel.Visible = !visible;
     }
 
     public void BookListPanelVisible(bool visible) {
       BookListPanel.Visible = visible;
-      _bookShowPanel.Visible = !visible;
+      _bookViewControl.Visible = !visible;
     }
 
-    public BookShowPanel BookShowPanel { get { return this._bookShowPanel; } }
-    public BookListPanel BookListPanel { get { return this.bookListPanel1; } }
+    public BookViewControl BookViewControl { get { return this._bookViewControl; } }
+    public BookListControl BookListPanel { get { return this.bookListPanel1; } }
 
     public XBooksData XBooksData {
       get { return _xBooksData; }

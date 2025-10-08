@@ -27,9 +27,9 @@
       this.tabPageHome = new System.Windows.Forms.TabPage();
       this.tabPageFolder = new System.Windows.Forms.TabPage();
       this.tabPageCharacter = new System.Windows.Forms.TabPage();
+      this.tabPageOriginal = new System.Windows.Forms.TabPage();
       this.tabPageCircle = new System.Windows.Forms.TabPage();
       this.tabPageTag = new System.Windows.Forms.TabPage();
-      this.tabPageOriginal = new System.Windows.Forms.TabPage();
       this.tabControl1.SuspendLayout();
       this.SuspendLayout();
       // 
@@ -78,6 +78,16 @@
       this.tabPageCharacter.Text = "キャラ";
       this.tabPageCharacter.UseVisualStyleBackColor = true;
       // 
+      // tabPageOriginal
+      // 
+      this.tabPageOriginal.Location = new System.Drawing.Point(4, 22);
+      this.tabPageOriginal.Name = "tabPageOriginal";
+      this.tabPageOriginal.Padding = new System.Windows.Forms.Padding(3);
+      this.tabPageOriginal.Size = new System.Drawing.Size(336, 520);
+      this.tabPageOriginal.TabIndex = 3;
+      this.tabPageOriginal.Text = "原作";
+      this.tabPageOriginal.UseVisualStyleBackColor = true;
+      // 
       // tabPageCircle
       // 
       this.tabPageCircle.Location = new System.Drawing.Point(4, 22);
@@ -97,16 +107,6 @@
       this.tabPageTag.TabIndex = 5;
       this.tabPageTag.Text = "タグ";
       this.tabPageTag.UseVisualStyleBackColor = true;
-      // 
-      // tabPageOriginal
-      // 
-      this.tabPageOriginal.Location = new System.Drawing.Point(4, 22);
-      this.tabPageOriginal.Name = "tabPageOriginal";
-      this.tabPageOriginal.Padding = new System.Windows.Forms.Padding(3);
-      this.tabPageOriginal.Size = new System.Drawing.Size(336, 520);
-      this.tabPageOriginal.TabIndex = 3;
-      this.tabPageOriginal.Text = "原作";
-      this.tabPageOriginal.UseVisualStyleBackColor = true;
       // 
       // SearchTabView
       // 

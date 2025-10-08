@@ -43,51 +43,54 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Control\Book\BookShowPanelControl.cs" />
-    <Compile Include="Control\Book\IBookShowPanelControl.cs" />
-    <Compile Include="Control\Book\IPictureBoxExControl.cs" />
-    <Compile Include="Control\Book\PictureBoxExControl.cs" />
-    <Compile Include="View\BookData\BookDataPanel.cs">
+    <Compile Include="Commands\Book\BookListCommand.cs" />
+    <Compile Include="Commands\Book\BookShowPanelCommand.cs" />
+    <Compile Include="Commands\Book\BookViewCommand.cs" />
+    <Compile Include="Commands\Book\IBookShowPanelCommand.cs" />
+    <Compile Include="Commands\Book\IPictureBoxExCommand.cs" />
+    <Compile Include="Commands\Book\PictureBoxExCommand.cs" />
+    <Compile Include="Controls\BookData\BookDataPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="View\BookData\BookDataPanel.Designer.cs">
+    <Compile Include="Controls\BookData\BookDataPanel.Designer.cs">
       <DependentUpon>BookDataPanel.cs</DependentUpon>
     </Compile>
-    <Compile Include="View\BookDetailPanel.cs">
+    <Compile Include="Controls\BookDetailPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="View\BookDetailPanel.Designer.cs">
+    <Compile Include="Controls\BookDetailPanel.Designer.cs">
       <DependentUpon>BookDetailPanel.cs</DependentUpon>
     </Compile>
-    <Compile Include="View\Book\BookButton.cs">
+    <Compile Include="Controls\Book\BookButton.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="View\Book\BookListPanel.cs">
+    <Compile Include="Controls\Book\BookButtonComparers.cs" />
+    <Compile Include="Controls\Book\BookListControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="View\Book\BookListPanel.Designer.cs">
-      <DependentUpon>BookListPanel.cs</DependentUpon>
+    <Compile Include="Controls\Book\BookListControl.Designer.cs">
+      <DependentUpon>BookListControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="View\Book\BookPanel.cs">
+    <Compile Include="Controls\Book\BookShowPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="View\Book\BookPanel.Designer.cs">
-      <DependentUpon>BookPanel.cs</DependentUpon>
-    </Compile>
-    <Compile Include="View\Book\BookShowPanel.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="View\Book\BookShowPanel.Designer.cs">
+    <Compile Include="Controls\Book\BookShowPanel.Designer.cs">
       <DependentUpon>BookShowPanel.cs</DependentUpon>
     </Compile>
-    <Compile Include="View\SearchTab\AbstractSearchTabTreeView.cs">
+    <Compile Include="Controls\Book\BookViewControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="View\SearchTab\SearchTabTreeNodeSorter.cs" />
-    <Compile Include="View\Book\PictureBoxEx.cs">
+    <Compile Include="Controls\Book\BookViewControl.Designer.cs">
+      <DependentUpon>BookViewControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\SearchTab\AbstractSearchTabTreeView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="View\Book\PictureBoxEx.Designer.cs">
+    <Compile Include="Controls\SearchTab\SearchTabTreeNodeSorter.cs" />
+    <Compile Include="Controls\Book\PictureBoxEx.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Book\PictureBoxEx.Designer.cs">
       <DependentUpon>PictureBoxEx.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\Resources.Designer.cs">
@@ -95,58 +98,58 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="View\SearchTab\SearchTabTagTreeView.cs">
+    <Compile Include="Controls\SearchTab\SearchTabTagTreeView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="View\SearchTab\SearchTabFolderTreeView.cs">
+    <Compile Include="Controls\SearchTab\SearchTabFolderTreeView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="View\SearchTab\SearchTabHomeTreeView.cs">
+    <Compile Include="Controls\SearchTab\SearchTabHomeTreeView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="View\SearchTab\SearchTabView.cs">
+    <Compile Include="Controls\SearchTab\SearchTabView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="View\SearchTab\SearchTabView.Designer.cs">
+    <Compile Include="Controls\SearchTab\SearchTabView.Designer.cs">
       <DependentUpon>SearchTabView.cs</DependentUpon>
     </Compile>
-    <Compile Include="View\SearchTab\TreeNodeObserve.cs" />
-    <Compile Include="View\TagText.cs">
+    <Compile Include="Controls\SearchTab\TreeNodeObserve.cs" />
+    <Compile Include="Controls\TagText.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="View\TagText.Designer.cs">
+    <Compile Include="Controls\TagText.Designer.cs">
       <DependentUpon>TagText.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Service Include="{94E38DFF-614B-4cbd-B67C-F211BB35CE8B}" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="View\BookData\BookDataPanel.resx">
+    <EmbeddedResource Include="Controls\BookData\BookDataPanel.resx">
       <DependentUpon>BookDataPanel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="View\BookDetailPanel.resx">
+    <EmbeddedResource Include="Controls\BookDetailPanel.resx">
       <DependentUpon>BookDetailPanel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="View\Book\BookListPanel.resx">
-      <DependentUpon>BookListPanel.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="View\Book\BookPanel.resx">
-      <DependentUpon>BookPanel.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="View\Book\BookShowPanel.resx">
+    <EmbeddedResource Include="Controls\Book\BookShowPanel.resx">
       <DependentUpon>BookShowPanel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="View\Book\PictureBoxEx.resx">
+    <EmbeddedResource Include="Controls\Book\BookViewControl.resx">
+      <DependentUpon>BookViewControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Book\PictureBoxEx.resx">
       <DependentUpon>PictureBoxEx.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\SearchTab\AbstractSearchTabTreeView.resx">
+      <DependentUpon>AbstractSearchTabTreeView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="View\SearchTab\SearchTabView.resx">
+    <EmbeddedResource Include="Controls\SearchTab\SearchTabView.resx">
       <DependentUpon>SearchTabView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="View\TagText.resx">
+    <EmbeddedResource Include="Controls\TagText.resx">
       <DependentUpon>TagText.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>

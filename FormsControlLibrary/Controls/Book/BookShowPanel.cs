@@ -7,13 +7,13 @@ namespace Nabedroid.XBooksReader.FormsControlLibrary {
 
   public partial class BookShowPanel : UserControl {
 
-    private IBookShowPanelControl _control;
+    private IBookShowPanelCommand _control;
     private Book _book;
 
     public BookShowPanel() {
       InitializeComponent();
       this.checkBox1.Checked = true;
-      _control = new BookShowPanelControl(this);
+      _control = new BookShowPanelCommand(this);
       this.bindingNavigator1.BindingSource = this.bindingSource1;
       this.pictureBoxEx1.DataBindings.Add(new Binding("Path", this.bindingSource1, ""));
       this.checkBox1.CheckedChanged += this._control.Fit;

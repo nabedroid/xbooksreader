@@ -24,18 +24,18 @@
     /// </summary>
     private void InitializeComponent() {
       this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-      this.searchTab1 = new Nabedroid.XBooksReader.FormsControlLibrary.SearchTabView();
-      this.bookListPanel1 = new Nabedroid.XBooksReader.FormsControlLibrary.BookListPanel();
       this.menuStrip1 = new System.Windows.Forms.MenuStrip();
       this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
       this.toolStripMenuItemOpen = new System.Windows.Forms.ToolStripMenuItem();
+      this.toolStripMenuItemSave = new System.Windows.Forms.ToolStripMenuItem();
       this.toolStripMenuItemSaveAs = new System.Windows.Forms.ToolStripMenuItem();
       this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
       this.toolStripMenuItemUpdate = new System.Windows.Forms.ToolStripMenuItem();
       this.toolStripMenuItemAddDirectory = new System.Windows.Forms.ToolStripMenuItem();
       this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
       this.toolStripMenuItemExit = new System.Windows.Forms.ToolStripMenuItem();
-      this.toolStripMenuItemSave = new System.Windows.Forms.ToolStripMenuItem();
+      this.searchTab1 = new Nabedroid.XBooksReader.FormsControlLibrary.SearchTabView();
+      this.bookListPanel1 = new Nabedroid.XBooksReader.FormsControlLibrary.BookListControl();
       ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
       this.splitContainer1.Panel1.SuspendLayout();
       this.splitContainer1.Panel2.SuspendLayout();
@@ -59,23 +59,6 @@
       this.splitContainer1.Size = new System.Drawing.Size(1140, 614);
       this.splitContainer1.SplitterDistance = 276;
       this.splitContainer1.TabIndex = 0;
-      // 
-      // searchTab1
-      // 
-      this.searchTab1.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.searchTab1.Location = new System.Drawing.Point(0, 0);
-      this.searchTab1.Name = "searchTab1";
-      this.searchTab1.Size = new System.Drawing.Size(276, 614);
-      this.searchTab1.TabIndex = 0;
-      // 
-      // bookListPanel1
-      // 
-      this.bookListPanel1.Books = null;
-      this.bookListPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.bookListPanel1.Location = new System.Drawing.Point(0, 0);
-      this.bookListPanel1.Name = "bookListPanel1";
-      this.bookListPanel1.Size = new System.Drawing.Size(860, 614);
-      this.bookListPanel1.TabIndex = 0;
       // 
       // menuStrip1
       // 
@@ -105,48 +88,65 @@
       // toolStripMenuItemOpen
       // 
       this.toolStripMenuItemOpen.Name = "toolStripMenuItemOpen";
-      this.toolStripMenuItemOpen.Size = new System.Drawing.Size(180, 22);
+      this.toolStripMenuItemOpen.Size = new System.Drawing.Size(161, 22);
       this.toolStripMenuItemOpen.Text = "開く";
+      // 
+      // toolStripMenuItemSave
+      // 
+      this.toolStripMenuItemSave.Name = "toolStripMenuItemSave";
+      this.toolStripMenuItemSave.Size = new System.Drawing.Size(161, 22);
+      this.toolStripMenuItemSave.Text = "保存";
       // 
       // toolStripMenuItemSaveAs
       // 
       this.toolStripMenuItemSaveAs.Name = "toolStripMenuItemSaveAs";
-      this.toolStripMenuItemSaveAs.Size = new System.Drawing.Size(180, 22);
+      this.toolStripMenuItemSaveAs.Size = new System.Drawing.Size(161, 22);
       this.toolStripMenuItemSaveAs.Text = "名前を付けて保存";
       // 
       // toolStripSeparator1
       // 
       this.toolStripSeparator1.Name = "toolStripSeparator1";
-      this.toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
+      this.toolStripSeparator1.Size = new System.Drawing.Size(158, 6);
       // 
       // toolStripMenuItemUpdate
       // 
       this.toolStripMenuItemUpdate.Name = "toolStripMenuItemUpdate";
-      this.toolStripMenuItemUpdate.Size = new System.Drawing.Size(180, 22);
+      this.toolStripMenuItemUpdate.Size = new System.Drawing.Size(161, 22);
       this.toolStripMenuItemUpdate.Text = "更新";
       // 
       // toolStripMenuItemAddDirectory
       // 
       this.toolStripMenuItemAddDirectory.Name = "toolStripMenuItemAddDirectory";
-      this.toolStripMenuItemAddDirectory.Size = new System.Drawing.Size(180, 22);
+      this.toolStripMenuItemAddDirectory.Size = new System.Drawing.Size(161, 22);
       this.toolStripMenuItemAddDirectory.Text = "フォルダ追加";
       // 
       // toolStripSeparator2
       // 
       this.toolStripSeparator2.Name = "toolStripSeparator2";
-      this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
+      this.toolStripSeparator2.Size = new System.Drawing.Size(158, 6);
       // 
       // toolStripMenuItemExit
       // 
       this.toolStripMenuItemExit.Name = "toolStripMenuItemExit";
-      this.toolStripMenuItemExit.Size = new System.Drawing.Size(180, 22);
+      this.toolStripMenuItemExit.Size = new System.Drawing.Size(161, 22);
       this.toolStripMenuItemExit.Text = "終了";
       // 
-      // toolStripMenuItemSave
+      // searchTab1
       // 
-      this.toolStripMenuItemSave.Name = "toolStripMenuItemSave";
-      this.toolStripMenuItemSave.Size = new System.Drawing.Size(180, 22);
-      this.toolStripMenuItemSave.Text = "保存";
+      this.searchTab1.BackColor = System.Drawing.SystemColors.Control;
+      this.searchTab1.Dock = System.Windows.Forms.DockStyle.Fill;
+      this.searchTab1.Location = new System.Drawing.Point(0, 0);
+      this.searchTab1.Name = "searchTab1";
+      this.searchTab1.Size = new System.Drawing.Size(276, 614);
+      this.searchTab1.TabIndex = 0;
+      // 
+      // bookListPanel1
+      // 
+      this.bookListPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+      this.bookListPanel1.Location = new System.Drawing.Point(0, 0);
+      this.bookListPanel1.Name = "bookListPanel1";
+      this.bookListPanel1.Size = new System.Drawing.Size(860, 614);
+      this.bookListPanel1.TabIndex = 0;
       // 
       // MainForm
       // 
@@ -172,7 +172,7 @@
 
     private System.Windows.Forms.SplitContainer splitContainer1;
     private FormsControlLibrary.SearchTabView searchTab1;
-    private FormsControlLibrary.BookListPanel bookListPanel1;
+    private FormsControlLibrary.BookListControl bookListPanel1;
     private System.Windows.Forms.MenuStrip menuStrip1;
     private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
     private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemOpen;

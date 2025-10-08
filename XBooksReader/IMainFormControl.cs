@@ -8,7 +8,7 @@ namespace Nabedroid.XBooksReader {
     void SearchTabNodeHomeAfterSelect(object sender, TreeViewEventArgs e);
     void SearchTabNodeFolderAfterSelect(object sender, TreeViewEventArgs e);
     void SearchTabNodeTagAfterSelect(object sender, TreeViewEventArgs e);
-    void BookClick(object sender, MouseEventArgs e);
+    void BookClick(object sender, EventArgs e);
     void ExitMenuClick(object sender, EventArgs e);
     void OpenMenuClick(object sender, EventArgs e);
     void SaveMenuClick(object sender, EventArgs e);

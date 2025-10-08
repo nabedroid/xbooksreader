@@ -14,6 +14,11 @@ namespace Nabedroid.XBooksReader.Common {
     public static readonly string[] DefaultImageExtensions = new string[] { "jpg", "jpeg", "png", "gif", "tiff", "bmp", "webp" };
 
     /// <summary>
+    /// アーカイブファイルの拡張子一覧
+    /// </summary>
+    public static readonly string[] DefaultArchiveExtensions = new string[] { "zip", "rar", "7z", "tar", "gz", "bz2" };
+
+    /// <summary>
     /// コンストラクタは秘匿
     /// </summary>
     private FileUtil() {
@@ -49,6 +54,15 @@ namespace Nabedroid.XBooksReader.Common {
     /// <returns>ディレクトリ内に存在する画像ファイルパスのリスト</returns>
     public static List<string> GetDirectoryImageFiles(string path) {
       return GetDirectoryFiles(path, DefaultImageExtensions);
+    }
+
+    /// <summary>
+    /// ディレクトリ内に存在するアーカイブファイルを取得する 
+    /// </summary>
+    /// <param name="path">検索するディレクトリパス</param>
+    /// <returns>ディレクトリ内に存在する画像ファイルパスのリスト</returns>
+    public static List<string> GetDirectoryArchiveFiles(string path) {
+      return GetDirectoryFiles(path, DefaultArchiveExtensions);
     }
 
     /// <summary>

@@ -1,10 +1,12 @@
 ﻿using Nabedroid.XBooksReader.Common;
+using System;
 using System.Drawing;
+using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 
 namespace Nabedroid.XBooksReader.FormsControlLibrary {
 
-  internal class PictureBoxExControl : IPictureBoxExControl {
+  internal class PictureBoxExCommand : IPictureBoxExCommand {
 
     private PictureBoxEx _pictureBoxEx;
     private PictureBox _pictureBox;
@@ -14,7 +16,7 @@ namespace Nabedroid.XBooksReader.FormsControlLibrary {
     private Image _image;
     private bool _fit;
 
-    public PictureBoxExControl(PictureBoxEx pictureBoxEx) {
+    public PictureBoxExCommand(PictureBoxEx pictureBoxEx) {
       this._pictureBoxEx = pictureBoxEx;
       this._pictureBox = pictureBoxEx.PictureBox;
       this.Fit(true);
@@ -114,14 +116,26 @@ namespace Nabedroid.XBooksReader.FormsControlLibrary {
       }
     }
 
+    public Image Image {
+      set {
+        this._image?.Dispose();
+        this._pictureBox.Image?.Dispose();
+        this._image = value;
+        this._pictureBox.Image = value.Clone() as Image;
+      }
+    }
+
+    [Obsolete("このプロパティは非推奨です。Image プロパティを使ってください。")]
     public string Path {
       get { return this._path; }
       set {
         this._path = value;
         this._image?.Dispose();
         this._pictureBox.Image?.Dispose();
-        this._image = ImageUtil.CreateImage(this._path);
-        this._pictureBox.Image = this._image.Clone() as Image;
+        if (this._path != null) {
+          this._image = ImageUtil.CreateImage(this._path);
+          this._pictureBox.Image = this._image.Clone() as Image;
+        }
       }
     }
 

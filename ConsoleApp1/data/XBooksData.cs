@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -220,17 +222,43 @@ namespace Nabedroid.XBooksReader.Common {
       foreach (string dirPath in Directory.EnumerateDirectories(searchPath.Path, "*", SearchOption.AllDirectories)) {
         // 登録済みのディレクトリの場合はスキップ
         if (path2book.ContainsKey(dirPath)) continue;
-        List<string> images = FileUtil.GetDirectoryImageFiles(dirPath);
+        AbstractFilePathListFactory factory = new FilePathListFactoryForDirectory(dirPath);
+        List<string> images = factory.GetImageFiles();
         if (images?.Count > 0) {
           // 画像ファイルが存在するディレクトリの場合
           images.Sort();
           string fileName = Path.GetFileName(dirPath);
           Book book = new Book {
-            Title = Path.GetFileName(fileName),
+            Title = fileName,
             Kana = ime.GetKatakana(fileName),
             Path = dirPath,
             Thumbnail = images[0],
             CreateDate = DateTimeOffset.Now,
+            FileType = "Directory",
+          };
+          Add(book);
+        }
+      }
+      // 画像ファイルを内包するアーカイブファイルを取得
+      foreach (string filePath in Directory.EnumerateFiles(searchPath.Path, "*.*", SearchOption.AllDirectories)) {
+        // アーカイブファイル以外はスキップ
+        string extension = Path.GetExtension(filePath).ToLower();
+        if (Constants.ArchiveExtensions.Contains(extension) == false) continue;
+        // 登録済みのアーカイブファイルの場合はスキップ
+        if (path2book.ContainsKey(filePath)) continue;
+        // アーカイブファイル内の画像ファイルを取得
+        AbstractFilePathListFactory factory = new Factory(filePath).FilePathListFactory;
+        List<string> images = factory.GetImageFiles();
+        if (images?.Count > 0) {
+          images.Sort();
+          string fileName = Path.GetFileNameWithoutExtension(filePath);
+          Book book = new Book {
+            Title = fileName,
+            Kana = ime.GetKatakana(fileName),
+            Path = filePath,
+            Thumbnail = images[0],
+            CreateDate = DateTimeOffset.Now,
+            FileType = "Archive",
           };
           Add(book);
         }
@@ -238,8 +266,8 @@ namespace Nabedroid.XBooksReader.Common {
       searchPath.SearchDate = DateTimeOffset.Now;
     }
 
-    public List<Book> SelectBook(AbstractBookFilter filter, int max = 30) {
-      List<Book> books = new List<Book>();
+    public ObservableCollection<Book> SelectBook(AbstractBookFilter filter, int max = 30) {
+      ObservableCollection<Book> books = new ObservableCollection<Book>();
       foreach (Book book in Books.Values) {
         if (filter.Match(book)) {
           books.Add(book);

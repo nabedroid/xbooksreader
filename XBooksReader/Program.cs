@@ -18,7 +18,6 @@ namespace Nabedroid.XBooksReader {
       } else {
         xBooksData.Open(defaultXBooksDataPath);
       }
-      
       Application.EnableVisualStyles();
       Application.SetCompatibleTextRenderingDefault(false);
       MainForm mainForm = new MainForm();

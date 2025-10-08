@@ -1,6 +1,8 @@
 ﻿using Nabedroid.XBooksReader.Common;
+using Nabedroid.XBooksReader.FormsControlLibrary;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
@@ -34,14 +36,15 @@ namespace Nabedroid.XBooksReader {
     /// <summary>
     /// 本選択時の処理
     /// </summary>
-    public void BookClick(object sender, MouseEventArgs e) {
-      Book clickBook = _mainForm.BookListPanel.ClickBook;
+    public void BookClick(object sender, EventArgs e) {
+      BookButton bookButton = sender as BookButton;
+      Book clickBook = bookButton?.Book;
       if (clickBook != null) {
         _mainForm.BookShowPanelVisible(true);
         //_mainForm.BookListPanel.Visible = false;
         // BookShowPanel を表示した状態で Book を設定しないと DataBinding がうまく処理されずにエラーで落ちる
         //_mainForm.BookShowPanel.Visible = true;
-        _mainForm.BookShowPanel.Book = clickBook;
+        _mainForm.BookViewControl.Book = clickBook;
       }
     }
 
@@ -131,7 +134,7 @@ namespace Nabedroid.XBooksReader {
       // TODO: 本をクリックし、TreeViewから同じフォルダを選択すると、本をクリックする前の選択状態が保持されているので、AfterSelectが発火しない
       _mainForm.BookListPanelVisible(true);
       AbstractBookFilter filter = new BookFilterPath(new BookFilterAnd(), e.Node.FullPath);
-      List<Book> books = _xBooksData.SelectBook(filter);
+      ObservableCollection<Book> books = _xBooksData.SelectBook(filter);
       _mainForm.SetBooks(books);
     }
 
