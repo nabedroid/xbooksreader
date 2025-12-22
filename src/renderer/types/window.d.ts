@@ -1,0 +1,70 @@
+/**
+ * Window APIの型定義
+ */
+import type { Book, BookInput, Tag, Bookmark, BookmarkInput, SearchFilter, ScanProgress, MetadataExtractionOptions } from '@/types';
+
+declare global {
+  interface Window {
+    electronAPI: {
+      // 本の操作
+      books: {
+        getAll: () => Promise<Book[]>;
+        getById: (id: number) => Promise<Book | null>;
+        search: (filter: SearchFilter) => Promise<Book[]>;
+        create: (book: BookInput) => Promise<Book>;
+        update: (id: number, book: Partial<BookInput>) => Promise<Book>;
+        delete: (id: number) => Promise<boolean>;
+        incrementReadCount: (id: number) => Promise<void>;
+        getMetadataList: (field: 'series' | 'author' | 'circle' | 'original_work' | 'characters') => Promise<string[]>;
+        getCount: (filter: SearchFilter) => Promise<number>;
+      };
+
+      // タグの操作
+      tags: {
+        getAll: () => Promise<Tag[]>;
+        getBookTags: (bookId: number) => Promise<Tag[]>;
+        setBookTags: (bookId: number, tags: string[]) => Promise<void>;
+        addToBook: (bookId: number, tag: string) => Promise<void>;
+        removeFromBook: (bookId: number, tag: string) => Promise<void>;
+      };
+
+      // しおりの操作
+      bookmarks: {
+        getBookBookmarks: (bookId: number) => Promise<Bookmark[]>;
+        create: (bookmark: BookmarkInput) => Promise<Bookmark>;
+        update: (id: number, note: string) => Promise<Bookmark>;
+        delete: (id: number) => Promise<boolean>;
+      };
+
+      // スキャン操作
+      scanner: {
+        start: (path: string, options: MetadataExtractionOptions) => Promise<number>;
+        cancel: () => Promise<void>;
+        onProgress: (callback: (progress: ScanProgress) => void) => void;
+      };
+
+      // 画像読み込み
+      images: {
+        load: (bookId: number, pageNumber: number) => Promise<string>; // Base64
+        getThumbnail: (bookId: number, pageNumber: number) => Promise<string>; // Base64
+        getPages: (bookId: number) => Promise<string[]>;
+      };
+
+      // バックアップ/エクスポート
+      backup: {
+        exportMetadata: (path: string) => Promise<void>;
+        importMetadata: (path: string) => Promise<number>;
+        createBackup: (path: string) => Promise<void>;
+        restoreBackup: (path: string) => Promise<void>;
+      };
+
+      // ユーティリティ
+      utils: {
+        selectDirectory: () => Promise<string | null>;
+        onMenuNavigate: (callback: (path: string) => void) => () => void;
+      };
+    };
+  }
+}
+
+export { };

@@ -1,0 +1,142 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.grid.large {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+
+.grid.medium {
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.grid.small {
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 0.6rem;
+  padding: 0.6rem;
+}
+
+/* 小サイズ時の表示調整 */
+.small .info {
+  padding: 0.4rem;
+}
+
+.small .title {
+  font-size: 0.75rem;
+  margin-bottom: 0;
+}
+
+.small .originalWork,
+.small .author {
+  display: none;
+}
+
+.small .rating {
+  font-size: 0.6rem;
+  left: 0.2rem;
+  bottom: 0.2rem;
+  padding: 0.05rem 0.2rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+  width: 100%;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  border-color: #667eea;
+}
+
+.card.selected {
+  border-color: #764ba2;
+  box-shadow: 0 0 20px rgba(118, 75, 162, 0.5);
+}
+
+.thumbnail {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 140%;
+  /* 5:7 Ratio */
+  background-color: #1a1a1a;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.thumbnail img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.favorite {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 1.5rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+}
+
+.info {
+  padding: 1rem;
+}
+
+.title {
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.originalWork,
+.author {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-bottom: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rating {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  color: #ffd700;
+  font-size: 0.8rem;
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+  pointer-events: none;
+}
+
+.empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #888;
+}
+
+.empty p {
+  font-size: 1.1rem;
+}

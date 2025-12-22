@@ -1,0 +1,66 @@
+.tabBar {
+  display: flex;
+  gap: 0.25rem;
+  background-color: #1a1a1a;
+  padding: 0.5rem;
+  border-bottom: 1px solid #444;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #2a2a2a;
+  border-radius: 4px 4px 0 0;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  min-width: 120px;
+  max-width: 200px;
+  border: 1px solid transparent;
+  border-bottom: none;
+}
+
+.homeTab {
+  min-width: 100px;
+  justify-content: center;
+}
+
+.tab:hover {
+  background-color: #333;
+}
+
+.tab.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+}
+
+.tabTitle {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.9rem;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.closeButton:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
