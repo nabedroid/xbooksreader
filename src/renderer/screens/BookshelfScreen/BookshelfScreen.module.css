@@ -1,8 +1,10 @@
 .container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
   background-color: #1a1a1a;
+  overflow: hidden;
+  /* コンテナからはみ出る要素を隠す */
 }
 
 .header {
@@ -111,6 +113,8 @@
   display: flex;
   flex: 1;
   overflow: hidden;
+  height: 100%;
+  /* 高さの明示が必要な場合があるため念のため追加 */
 }
 
 .sidebar {
@@ -123,6 +127,9 @@
 .main {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  /* 横スクロールを防止 */
+  width: 100%;
 }
 
 .loading {

@@ -73,6 +73,20 @@ export default function ImageViewer({
     }
   };
 
+  const handleImageClick = (e: React.MouseEvent<HTMLImageElement>) => {
+    const width = e.currentTarget.clientWidth;
+    const x = e.nativeEvent.offsetX;
+
+    // 左端30%をクリック -> 前のページ
+    if (x < width * 0.3) {
+      handlePrevPage();
+    }
+    // 右端30%をクリック -> 次のページ
+    else if (x > width * 0.7) {
+      handleNextPage();
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.imageArea}>
@@ -86,21 +100,31 @@ export default function ImageViewer({
             className={`${styles.imageWrapper} ${isFitToScreen ? styles.fit : ''}`}
             style={isFitToScreen ? {} : { transform: `scale(${zoom / 100})` }}
           >
-            <img src={imageSrc} alt={`Page ${currentPage + 1}`} />
+            <img
+              src={imageSrc}
+              alt={`Page ${currentPage + 1}`}
+              onClick={handleImageClick}
+            />
           </div>
         )}
       </div>
 
       <div className={styles.controls}>
         <div className={styles.navigation}>
-          <button onClick={handlePrevPage} disabled={currentPage === 0}>
+          <button onClick={() => currentPage >= 10 && onPageChange(currentPage - 10)} disabled={currentPage < 10} title="-10ページ">
+            ⏪
+          </button>
+          <button onClick={handlePrevPage} disabled={currentPage === 0} title="前のページ">
             ◀
           </button>
           <span className={styles.pageInfo}>
             {currentPage + 1} / {totalPages}
           </span>
-          <button onClick={handleNextPage} disabled={currentPage === totalPages - 1}>
+          <button onClick={handleNextPage} disabled={currentPage === totalPages - 1} title="次のページ">
             ▶
+          </button>
+          <button onClick={() => currentPage <= totalPages - 11 && onPageChange(currentPage + 10)} disabled={currentPage > totalPages - 11} title="+10ページ">
+            ⏩
           </button>
         </div>
 

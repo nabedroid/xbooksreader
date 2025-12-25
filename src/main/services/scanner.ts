@@ -6,7 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import { BrowserWindow } from 'electron';
 import yauzl from 'yauzl';
-import { createBook, getBookByPath } from '../database/models/Book';
+import { createBook, getBookByPath, getAllBooks, deleteBook, updateBook } from '../database/models/Book';
 import { generateThumbnail } from './thumbnailGenerator';
 import { extractMetadataFromPath } from './metadataExtractor';
 import type { MetadataExtractionOptions, ScanProgress } from '@/types';
@@ -19,10 +19,11 @@ let isScanning = false;
 let shouldCancel = false;
 
 /**
- * ディレクトリをスキャンして本を検出
+ * 複数のディレクトリをスキャン
  */
-export async function scanDirectory(
-  dirPath: string,
+export async function scanDirectories(
+  dirPaths: string[],
+  mode: 'add' | 'sync',
   options: MetadataExtractionOptions,
   window: BrowserWindow | null
 ): Promise<number> {
@@ -32,65 +33,136 @@ export async function scanDirectory(
 
   isScanning = true;
   shouldCancel = false;
+  let totalBooksFound = 0;
+
+  try {
+    console.log(`スキャン開始: ${dirPaths.length}件のパス, モード: ${mode}`);
+
+    // パスごとにスキャン
+    for (let i = 0; i < dirPaths.length; i++) {
+      if (shouldCancel) break;
+      const dirPath = dirPaths[i];
+
+      // 進捗：メインフェーズ開始
+      sendProgress(window, {
+        current: i,
+        total: dirPaths.length,
+        currentPath: dirPath,
+        status: 'scanning',
+      });
+
+      totalBooksFound += await scanDirectoryInternal(dirPath, mode, options, window);
+    }
+
+    // Syncモード時のクリーンアップ
+    if (mode === 'sync' && !shouldCancel) {
+      sendProgress(window, {
+        current: 0,
+        total: 100,
+        currentPath: 'データベースのクリーンアップ中',
+        status: 'processing', // クライアント側の型定義に processing が必要
+      });
+      await cleanupDatabase(dirPaths);
+    }
+
+    sendProgress(window, {
+      current: totalBooksFound,
+      total: totalBooksFound,
+      currentPath: '',
+      status: 'completed',
+    });
+
+    console.log(`全スキャン完了: ${totalBooksFound}冊の本を検出`);
+    return totalBooksFound;
+  } finally {
+    isScanning = false;
+    shouldCancel = false;
+  }
+}
+
+/**
+ * 単一ディレクトリのスキャン（内部用）
+ */
+async function scanDirectoryInternal(
+  dirPath: string,
+  mode: 'add' | 'sync',
+  options: MetadataExtractionOptions,
+  window: BrowserWindow | null
+): Promise<number> {
   let booksFound = 0;
 
   try {
-    console.log(`スキャン開始: ${dirPath}`);
-
     // 全てのファイルとディレクトリを再帰的に取得
     const items = await getAllItems(dirPath);
     const total = items.length;
 
     for (let i = 0; i < items.length; i++) {
-      if (shouldCancel) {
-        console.log('スキャンがキャンセルされました');
-        break;
-      }
+      if (shouldCancel) break;
 
       const item = items[i];
 
-      // 進捗を送信
-      sendProgress(window, {
-        current: i + 1,
-        total,
-        currentPath: item,
-        status: 'scanning',
-      });
+      // 間引いて進捗を送信（頻繁すぎるとUIが固まるため）
+      if (i % 10 === 0) {
+        sendProgress(window, {
+          current: i + 1,
+          total,
+          currentPath: item,
+          status: 'scanning',
+        });
+      }
 
       try {
+        // ファイルの存在確認 (getAllItemsから時間が経っている可能性があるため)
+        if (!fs.existsSync(item)) continue;
+
         const stats = fs.statSync(item);
 
         if (stats.isDirectory()) {
           // ディレクトリ内に画像があるかチェック
           if (await hasImages(item)) {
-            await processBook(item, 'folder', options);
+            await processBook(item, 'folder', mode, options);
             booksFound++;
           }
         } else if (item.toLowerCase().endsWith('.zip')) {
           // ZIPファイル
-          await processBook(item, 'zip', options);
+          await processBook(item, 'zip', mode, options);
           booksFound++;
         }
       } catch (error) {
         console.error(`エラー: ${item}`, error);
       }
     }
-
-    // 完了を送信
-    sendProgress(window, {
-      current: total,
-      total,
-      currentPath: '',
-      status: 'completed',
-    });
-
-    console.log(`スキャン完了: ${booksFound}冊の本を検出`);
     return booksFound;
-  } finally {
-    isScanning = false;
-    shouldCancel = false;
+  } catch (error) {
+    console.error(`ディレクトリ読み込みエラー: ${dirPath}`, error);
+    return 0;
   }
 }
+
+/**
+ * データベースのクリーンアップ（Syncモード用）
+ * 指定されたルートパスの配下にあるが、実体が存在しない本を削除
+ */
+async function cleanupDatabase(rootPaths: string[]) {
+  console.log('データベースのクリーンアップを開始...');
+  const allBooks = await getAllBooks();
+
+  for (const book of allBooks) {
+    if (shouldCancel) break;
+
+    // この本がスキャン対象パスのいずれかの配下にあるか確認
+    const isTarget = rootPaths.some(root => book.path.startsWith(root));
+    if (!isTarget) continue;
+
+    // 実体が存在するか確認
+    if (!fs.existsSync(book.path)) {
+      console.log(`削除（ファイル消失）: ${book.path}`);
+      await deleteBook(book.id);
+    }
+  }
+  console.log('クリーンアップ完了');
+}
+
 
 /**
  * スキャンをキャンセル
@@ -100,29 +172,49 @@ export function cancelScan() {
 }
 
 /**
- * 本を処理してデータベースに追加
+ * 本を処理してデータベースに追加・更新
  */
 async function processBook(
   bookPath: string,
   type: 'folder' | 'zip',
+  mode: 'add' | 'sync',
   options: MetadataExtractionOptions
 ) {
   // 既に存在するかチェック
   const existing = await getBookByPath(bookPath);
+
   if (existing) {
-    console.log(`既に存在: ${bookPath}`);
+    // Syncモードで、タイプが変更されている場合は更新
+    if (mode === 'sync' && existing.type !== type) {
+      console.log(`タイプ更新: ${bookPath} (${existing.type} -> ${type})`);
+
+      const pageCount = await getPageCount(bookPath, type);
+
+      // サムネイル再生成
+      let thumbnail = existing.thumbnail; // 文字列ならBufferに戻す等の処理が必要だが、モデル上はBuffer|null
+      try {
+        // nullでなければBufferとして扱う（モデル定義依存）
+        // ここでは単純に再生成を試みる
+        const newThumb = await generateThumbnail(bookPath, type, 0);
+        if (newThumb) thumbnail = newThumb; // バッファ
+      } catch (e) { }
+
+      await updateBook(existing.id, {
+        type,
+        page_count: pageCount,
+        thumbnail: thumbnail as any,
+      });
+    }
     return;
   }
 
-  // メタデータを抽出
+  // 新規追加
   const metadata = options.enabled
     ? extractMetadataFromPath(bookPath)
     : {};
 
-  // ページ数を取得
   const pageCount = await getPageCount(bookPath, type);
 
-  // サムネイルを生成（最初の画像から）
   let thumbnail: Buffer | undefined;
   try {
     thumbnail = await generateThumbnail(bookPath, type, 0);
@@ -130,7 +222,6 @@ async function processBook(
     console.error('サムネイル生成エラー:', error);
   }
 
-  // データベースに追加
   await createBook({
     path: bookPath,
     type,
@@ -142,7 +233,7 @@ async function processBook(
     thumbnail,
   });
 
-  console.log(`追加: ${bookPath} (${pageCount}ページ)`);
+  console.log(`追加: ${bookPath}`);
 }
 
 /**
@@ -150,7 +241,7 @@ async function processBook(
  */
 async function getAllItems(dirPath: string): Promise<string[]> {
   const items: string[] = [];
-
+  // 再帰制限やパフォーマンス考慮をしていない簡易実装のため注意
   async function traverse(currentPath: string) {
     try {
       const entries = fs.readdirSync(currentPath, { withFileTypes: true });
@@ -166,7 +257,7 @@ async function getAllItems(dirPath: string): Promise<string[]> {
         }
       }
     } catch (error) {
-      console.error(`ディレクトリ読み込みエラー: ${currentPath}`, error);
+      // アクセス権エラーなどは無視
     }
   }
 
@@ -200,11 +291,11 @@ async function getPageCount(bookPath: string, type: 'folder' | 'zip'): Promise<n
       return IMAGE_EXTENSIONS.includes(ext);
     }).length;
   } else {
-    // ZIP内の画像数をカウント（yauzlを使用）
-    return new Promise((resolve, reject) => {
+    // ZIP内の画像数をカウント
+    return new Promise((resolve) => {
       yauzl.open(bookPath, { lazyEntries: true }, (err: any, zipfile: any) => {
         if (err) {
-          reject(err);
+          resolve(0); // エラーなら0ページとする
           return;
         }
 
@@ -222,7 +313,7 @@ async function getPageCount(bookPath: string, type: 'folder' | 'zip'): Promise<n
           resolve(count);
         });
 
-        zipfile.on('error', reject);
+        zipfile.on('error', () => resolve(0));
       });
     });
   }

@@ -1,39 +1,69 @@
-/**
- * 設定画面
- */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSettingsStore } from '@/renderer/store/useSettingsStore';
+import type { ScanProgress } from '@/types';
 import styles from './SettingsScreen.module.css';
 
 export default function SettingsScreen() {
   const {
-    scanPath,
+    scanPaths,
     autoExtractMetadata,
     displayMode,
     theme,
-    setScanPath,
+    addScanPath,
+    removeScanPath,
     setAutoExtractMetadata,
     setDisplayMode,
     setTheme,
   } = useSettingsStore();
 
   const [isScanning, setIsScanning] = useState(false);
-  const [scanProgress, setScanProgress] = useState({ current: 0, total: 0 });
+  const [scanProgress, setScanProgress] = useState<ScanProgress>({
+    current: 0,
+    total: 0,
+    currentPath: '',
+    status: 'scanning'
+  });
+  const [scanMode, setScanMode] = useState<'add' | 'sync'>('add');
+
+  useEffect(() => {
+    // メニューからのアクションをリッスン
+    if (window.electronAPI.utils.onMenuAction) {
+      const removeListener = window.electronAPI.utils.onMenuAction((action) => {
+        if (action === 'add-folder') {
+          handleSelectFolder();
+        }
+      });
+      return removeListener;
+    }
+  }, []);
 
   const handleSelectFolder = async () => {
     const path = await window.electronAPI.utils.selectDirectory();
     if (path) {
-      setScanPath(path);
+      addScanPath(path);
+    }
+  };
+
+  const handleRemoveFolder = (path: string) => {
+    if (confirm(`このフォルダをスキャン対象から削除しますか？\n${path}`)) {
+      removeScanPath(path);
     }
   };
 
   const handleStartScan = async () => {
-    if (!scanPath) {
-      alert('スキャン対象フォルダを選択してください');
+    if (scanPaths.length === 0) {
+      alert('スキャン対象フォルダを追加してください');
       return;
     }
 
+    if (scanMode === 'sync') {
+      if (!confirm('同期モードを実行します。削除されたファイルや構成が変更されたフォルダはデータベースから更新または削除されます。\nよろしいですか？')) {
+        return;
+      }
+    }
+
     setIsScanning(true);
+    setScanProgress({ current: 0, total: 0, currentPath: '', status: 'scanning' });
 
     // 進捗を監視
     window.electronAPI.scanner.onProgress((progress) => {
@@ -41,10 +71,10 @@ export default function SettingsScreen() {
     });
 
     try {
-      const count = await window.electronAPI.scanner.start(scanPath, {
+      const count = await window.electronAPI.scanner.start(scanPaths, scanMode, {
         enabled: autoExtractMetadata,
       });
-      alert(`${count}冊の本をスキャンしました`);
+      alert(`スキャン完了: ${count}冊の本を処理しました`);
     } catch (error) {
       console.error('スキャンエラー:', error);
       alert('スキャン中にエラーが発生しました');
@@ -59,17 +89,14 @@ export default function SettingsScreen() {
   };
 
   const handleExportMetadata = async () => {
-    // TODO: ファイル保存ダイアログ
     alert('エクスポート機能は実装予定です');
   };
 
   const handleImportMetadata = async () => {
-    // TODO: ファイル選択ダイアログ
     alert('インポート機能は実装予定です');
   };
 
   const handleCreateBackup = async () => {
-    // TODO: ファイル保存ダイアログ
     alert('バックアップ機能は実装予定です');
   };
 
@@ -85,14 +112,38 @@ export default function SettingsScreen() {
 
           <div className={styles.field}>
             <label>スキャン対象フォルダ</label>
-            <div className={styles.pathInput}>
-              <input
-                type="text"
-                value={scanPath}
-                readOnly
-                placeholder="フォルダを選択してください"
-              />
-              <button onClick={handleSelectFolder}>選択</button>
+            <div className={styles.pathList}>
+              {scanPaths.map((path) => (
+                <div key={path} className={styles.pathItem}>
+                  <span>{path}</span>
+                  <button onClick={() => handleRemoveFolder(path)}>削除</button>
+                </div>
+              ))}
+            </div>
+            <button className={styles.addPathButton} onClick={handleSelectFolder}>
+              ＋ フォルダを追加
+            </button>
+          </div>
+
+          <div className={styles.field}>
+            <label>スキャンモード</label>
+            <div className={styles.scanMode}>
+              <label className={styles.radioLabel}>
+                <input
+                  type="radio"
+                  checked={scanMode === 'add'}
+                  onChange={() => setScanMode('add')}
+                />
+                追加モード (新規ファイルのみ追加)
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="radio"
+                  checked={scanMode === 'sync'}
+                  onChange={() => setScanMode('sync')}
+                />
+                同期モード (削除・変更を反映)
+              </label>
             </div>
           </div>
 
@@ -120,12 +171,13 @@ export default function SettingsScreen() {
                 <div className={styles.progress}>
                   <p>
                     スキャン中: {scanProgress.current} / {scanProgress.total}
+                    {scanProgress.status === 'processing' && ' (処理中...)'}
                   </p>
                   <div className={styles.progressBar}>
                     <div
                       className={styles.progressFill}
                       style={{
-                        width: `${(scanProgress.current / scanProgress.total) * 100}%`,
+                        width: scanProgress.total > 0 ? `${(scanProgress.current / scanProgress.total) * 100}%` : '0%',
                       }}
                     />
                   </div>

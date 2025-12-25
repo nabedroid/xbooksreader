@@ -91,9 +91,9 @@ export function registerIpcHandlers() {
   });
 
   // スキャン操作
-  ipcMain.handle('scanner:start', async (event, dirPath: string, options: any) => {
+  ipcMain.handle('scanner:start', async (event, paths: string[], mode: 'add' | 'sync', options: any) => {
     const window = BrowserWindow.fromWebContents(event.sender);
-    return Scanner.scanDirectory(dirPath, options, window);
+    return Scanner.scanDirectories(paths, mode, options, window);
   });
 
   ipcMain.handle('scanner:cancel', () => {

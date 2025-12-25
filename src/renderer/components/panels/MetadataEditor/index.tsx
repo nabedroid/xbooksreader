@@ -132,7 +132,7 @@ export default function MetadataEditor({ book, onUpdate }: MetadataEditorProps) 
   };
 
   const renderStars = () => {
-    return Array.from({ length: 5 }, (_, i) => (
+    return Array.from({ length: 10 }, (_, i) => (
       <span
         key={i}
         className={`${styles.star} ${i < rating ? styles.filled : ''}`}
@@ -185,7 +185,7 @@ export default function MetadataEditor({ book, onUpdate }: MetadataEditorProps) 
             >
               {val}
             </span>
-          )) : <span className={styles.none}>なし</span>}
+          )) : <span className={styles.none}>-</span>}
         </div>
       </div>
     );
@@ -295,7 +295,7 @@ export default function MetadataEditor({ book, onUpdate }: MetadataEditorProps) 
                 >
                   {tag}
                 </span>
-              )) : <span className={styles.none}>なし</span>}
+              )) : <span className={styles.none}>-</span>}
             </div>
           </div>
         </div>

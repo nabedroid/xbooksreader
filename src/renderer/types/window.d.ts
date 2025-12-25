@@ -38,7 +38,7 @@ declare global {
 
       // スキャン操作
       scanner: {
-        start: (path: string, options: MetadataExtractionOptions) => Promise<number>;
+        start: (paths: string[], mode: 'add' | 'sync', options: MetadataExtractionOptions) => Promise<number>;
         cancel: () => Promise<void>;
         onProgress: (callback: (progress: ScanProgress) => void) => void;
       };
@@ -62,6 +62,7 @@ declare global {
       utils: {
         selectDirectory: () => Promise<string | null>;
         onMenuNavigate: (callback: (path: string) => void) => () => void;
+        onMenuAction: (callback: (action: string) => void) => () => void;
       };
     };
   }

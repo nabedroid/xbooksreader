@@ -38,7 +38,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // スキャン操作
   scanner: {
-    start: (path: string, options: any) => ipcRenderer.invoke('scanner:start', path, options),
+    start: (paths: string[], mode: string, options: any) => ipcRenderer.invoke('scanner:start', paths, mode, options),
     cancel: () => ipcRenderer.invoke('scanner:cancel'),
     onProgress: (callback: (progress: any) => void) => {
       ipcRenderer.on('scanner:progress', (_event, progress) => callback(progress));
@@ -67,6 +67,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
       const subscription = (_event: any, path: string) => callback(path);
       ipcRenderer.on('menu:navigate', subscription);
       return () => ipcRenderer.removeListener('menu:navigate', subscription);
+    },
+    onMenuAction: (callback: (action: string) => void) => {
+      const subscription = (_event: any, action: string) => callback(action);
+      ipcRenderer.on('menu:action', subscription);
+      return () => ipcRenderer.removeListener('menu:action', subscription);
     },
   },
 });

@@ -49,15 +49,8 @@ function createWindow() {
     // メニューの設定
     const template: Electron.MenuItemConstructorOptions[] = [
       {
-        label: '表示',
+        label: 'ファイル',
         submenu: [
-          {
-            label: '本棚',
-            accelerator: 'CmdOrCtrl+B',
-            click: () => {
-              mainWindow?.webContents.send('menu:navigate', '/');
-            }
-          },
           {
             label: '設定',
             accelerator: 'CmdOrCtrl+,',
@@ -66,6 +59,15 @@ function createWindow() {
             }
           },
           { type: 'separator' },
+          {
+            label: '終了',
+            role: 'quit'
+          }
+        ]
+      },
+      {
+        label: '表示',
+        submenu: [
           { role: 'reload' },
           { role: 'forceReload' },
           { role: 'toggleDevTools' },

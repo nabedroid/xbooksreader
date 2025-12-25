@@ -71,6 +71,7 @@ export default function PageThumbnailList({
                 <div className={styles.placeholder}></div>
               )}
             </div>
+            <span className={styles.pageNumber}>{index + 1}</span>
           </div>
         ))}
       </div>

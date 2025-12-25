@@ -5,13 +5,14 @@ import { create } from 'zustand';
 
 interface SettingsStore {
   // 状態
-  scanPath: string;
+  scanPaths: string[];
   autoExtractMetadata: boolean;
   displayMode: 'single' | 'spread' | 'scroll';
   theme: 'dark' | 'light';
 
   // アクション
-  setScanPath: (path: string) => void;
+  addScanPath: (path: string) => void;
+  removeScanPath: (path: string) => void;
   setAutoExtractMetadata: (enabled: boolean) => void;
   setDisplayMode: (mode: 'single' | 'spread' | 'scroll') => void;
   setTheme: (theme: 'dark' | 'light') => void;
@@ -25,14 +26,23 @@ const STORAGE_KEY = 'xbooksreader-settings';
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
   // 初期状態
-  scanPath: '',
+  scanPaths: [],
   autoExtractMetadata: true,
   displayMode: 'single',
   theme: 'dark',
 
   // アクション
-  setScanPath: (path) => {
-    set({ scanPath: path });
+  addScanPath: (path) => {
+    const { scanPaths } = get();
+    if (!scanPaths.includes(path)) {
+      set({ scanPaths: [...scanPaths, path] });
+      get().saveSettings();
+    }
+  },
+
+  removeScanPath: (path) => {
+    const { scanPaths } = get();
+    set({ scanPaths: scanPaths.filter(p => p !== path) });
     get().saveSettings();
   },
 
@@ -57,6 +67,13 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const settings = JSON.parse(saved);
+
+        // 以前の scanPath (単数) からの移行
+        if ('scanPath' in settings && !settings.scanPaths) {
+          settings.scanPaths = settings.scanPath ? [settings.scanPath] : [];
+          delete settings.scanPath;
+        }
+
         set(settings);
       }
     } catch (error) {
@@ -68,7 +85,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   saveSettings: () => {
     try {
       const settings = {
-        scanPath: get().scanPath,
+        scanPaths: get().scanPaths,
         autoExtractMetadata: get().autoExtractMetadata,
         displayMode: get().displayMode,
         theme: get().theme,

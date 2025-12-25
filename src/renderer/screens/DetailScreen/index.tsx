@@ -38,6 +38,7 @@ export default function DetailScreen() {
       setTotalPages(pages.length);
     } catch (error) {
       console.error('ページ数取得エラー:', error);
+      alert('本の情報を読み込めませんでした。ファイルが移動または削除されている可能性があります。');
     }
   };
 
