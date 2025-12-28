@@ -13,6 +13,7 @@ export default function SearchPanel({ onSearch, onClear }: SearchPanelProps) {
   const [query, setQuery] = useState('');
   const [series, setSeries] = useState('');
   const [author, setAuthor] = useState('');
+  const [circle, setCircle] = useState('');
   const [originalWork, setOriginalWork] = useState('');
   const [characters, setCharacters] = useState('');
   const [tags, setTags] = useState<string[]>([]);
@@ -28,6 +29,7 @@ export default function SearchPanel({ onSearch, onClear }: SearchPanelProps) {
       setQuery(storeSearchFilter.query || '');
       setSeries(storeSearchFilter.series || '');
       setAuthor(storeSearchFilter.author || '');
+      setCircle(storeSearchFilter.circle || '');
       setOriginalWork(storeSearchFilter.original_work || '');
       setCharacters(storeSearchFilter.characters || '');
       setTags(storeSearchFilter.tags || []);
@@ -40,13 +42,14 @@ export default function SearchPanel({ onSearch, onClear }: SearchPanelProps) {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [overlayTitle, setOverlayTitle] = useState('');
   const [overlayItems, setOverlayItems] = useState<string[]>([]);
-  const [activeField, setActiveField] = useState<'series' | 'author' | 'original_work' | 'characters' | 'tags' | null>(null);
+  const [activeField, setActiveField] = useState<'series' | 'author' | 'circle' | 'original_work' | 'characters' | 'tags' | null>(null);
 
   const handleSearch = () => {
     const filter: SearchFilter = {
       query: query || undefined,
       series: series || undefined,
       author: author || undefined,
+      circle: circle || undefined,
       original_work: originalWork || undefined,
       characters: characters || undefined,
       tags: tags.length > 0 ? tags : undefined,
@@ -60,6 +63,7 @@ export default function SearchPanel({ onSearch, onClear }: SearchPanelProps) {
     setQuery('');
     setSeries('');
     setAuthor('');
+    setCircle('');
     setOriginalWork('');
     setCharacters('');
     setTags([]);
@@ -69,7 +73,7 @@ export default function SearchPanel({ onSearch, onClear }: SearchPanelProps) {
     onClear();
   };
 
-  const openSelection = async (field: 'series' | 'author' | 'original_work' | 'characters' | 'tags', titleStr: string) => {
+  const openSelection = async (field: 'series' | 'author' | 'circle' | 'original_work' | 'characters' | 'tags', titleStr: string) => {
     try {
       let items: string[] = [];
       if (field === 'tags') {
@@ -90,6 +94,7 @@ export default function SearchPanel({ onSearch, onClear }: SearchPanelProps) {
   const handleSelect = (value: string) => {
     if (activeField === 'series') setSeries(value);
     if (activeField === 'author') setAuthor(value);
+    if (activeField === 'circle') setCircle(value);
     if (activeField === 'original_work') setOriginalWork(value);
     if (activeField === 'characters') setCharacters(value);
     if (activeField === 'tags') {
@@ -121,7 +126,10 @@ export default function SearchPanel({ onSearch, onClear }: SearchPanelProps) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="タイトル、作者、サークル..."
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+          onKeyDown={(e) => {
+            e.stopPropagation();
+            if (e.key === 'Enter') handleSearch();
+          }}
         />
       </div>
 
@@ -134,6 +142,7 @@ export default function SearchPanel({ onSearch, onClear }: SearchPanelProps) {
           type="text"
           value={series}
           onChange={(e) => setSeries(e.target.value)}
+          onKeyDown={(e) => e.stopPropagation()}
         />
       </div>
 
@@ -146,6 +155,20 @@ export default function SearchPanel({ onSearch, onClear }: SearchPanelProps) {
           type="text"
           value={author}
           onChange={(e) => setAuthor(e.target.value)}
+          onKeyDown={(e) => e.stopPropagation()}
+        />
+      </div>
+
+      <div className={styles.field}>
+        <div className={styles.labelWithAction}>
+          <label>サークル</label>
+          <button className={styles.selectButton} onClick={() => openSelection('circle', 'サークルを選択')}>選択</button>
+        </div>
+        <input
+          type="text"
+          value={circle}
+          onChange={(e) => setCircle(e.target.value)}
+          onKeyDown={(e) => e.stopPropagation()}
         />
       </div>
 
@@ -158,6 +181,7 @@ export default function SearchPanel({ onSearch, onClear }: SearchPanelProps) {
           type="text"
           value={originalWork}
           onChange={(e) => setOriginalWork(e.target.value)}
+          onKeyDown={(e) => e.stopPropagation()}
         />
       </div>
 
@@ -170,6 +194,7 @@ export default function SearchPanel({ onSearch, onClear }: SearchPanelProps) {
           type="text"
           value={characters}
           onChange={(e) => setCharacters(e.target.value)}
+          onKeyDown={(e) => e.stopPropagation()}
         />
       </div>
 
@@ -190,7 +215,10 @@ export default function SearchPanel({ onSearch, onClear }: SearchPanelProps) {
           type="text"
           value={tagInput}
           onChange={(e) => setTagInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
+          onKeyDown={(e) => {
+            e.stopPropagation();
+            if (e.key === 'Enter') handleAddTag();
+          }}
           placeholder="タグを追加してEnter"
         />
       </div>
@@ -200,14 +228,20 @@ export default function SearchPanel({ onSearch, onClear }: SearchPanelProps) {
         <select
           value={rating ?? ''}
           onChange={(e) => setRating(e.target.value !== '' ? Number(e.target.value) : undefined)}
+          onKeyDown={(e) => e.stopPropagation()}
         >
           <option value="">すべて</option>
-          <option value="0">未設定（★0）</option>
-          <option value="5">★★★★★</option>
-          <option value="4">★★★★☆ 以上</option>
-          <option value="3">★★★☆☆ 以上</option>
-          <option value="2">★★☆☆☆ 以上</option>
-          <option value="1">★☆☆☆☆ 以上</option>
+          <option value="0">未設定</option>
+          <option value="10">★★★★★★★★★★</option>
+          <option value="9">★★★★★★★★★☆ 以上</option>
+          <option value="8">★★★★★★★★☆☆ 以上</option>
+          <option value="7">★★★★★★★☆☆☆ 以上</option>
+          <option value="6">★★★★★★☆☆☆☆ 以上</option>
+          <option value="5">★★★★★☆☆☆☆☆ 以上</option>
+          <option value="4">★★★★☆☆☆☆☆☆ 以上</option>
+          <option value="3">★★★☆☆☆☆☆☆☆ 以上</option>
+          <option value="2">★★☆☆☆☆☆☆☆☆ 以上</option>
+          <option value="1">★☆☆☆☆☆☆☆☆☆ 以上</option>
         </select>
       </div>
 

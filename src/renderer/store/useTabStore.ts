@@ -20,6 +20,7 @@ interface TabStore {
   closeTab: (tabId: string) => void;
   setActiveTab: (tabId: string) => void;
   updateTabPage: (tabId: string, page: number) => void;
+  updateBookInTabs: (book: Book) => void;
   closeAllTabs: () => void;
 }
 
@@ -68,6 +69,13 @@ export const useTabStore = create<TabStore>((set, get) => ({
   updateTabPage: (tabId, page) => {
     const tabs = get().tabs.map(t =>
       t.id === tabId ? { ...t, currentPage: page } : t
+    );
+    set({ tabs });
+  },
+
+  updateBookInTabs: (book) => {
+    const tabs = get().tabs.map(t =>
+      t.book.id === book.id ? { ...t, book } : t
     );
     set({ tabs });
   },

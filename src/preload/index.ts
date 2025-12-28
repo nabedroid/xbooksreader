@@ -60,6 +60,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     restoreBackup: (path: string) => ipcRenderer.invoke('backup:restoreBackup', path),
   },
 
+  // メタデータWeb取得
+  metadata: {
+    search: (query: string) => ipcRenderer.invoke('metadata:search', query),
+  },
+
   // ユーティリティ
   utils: {
     selectDirectory: () => ipcRenderer.invoke('utils:selectDirectory'),

@@ -50,9 +50,17 @@ export default function DetailScreen() {
     }
   };
 
-  const handleMetadataUpdate = (updates: any) => {
-    if (book) {
-      updateBook(book.id, updates);
+  const handleMetadataUpdate = (bookId: number, updates: any) => {
+    if (book && book.id === bookId) {
+      updateBook(bookId, updates);
+    }
+  };
+
+  const handleTagsUpdate = async (bookId: number, tags: string[]) => {
+    try {
+      await window.electronAPI.tags.setBookTags(bookId, tags);
+    } catch (error) {
+      console.error('タグ更新エラー:', error);
     }
   };
 
@@ -140,6 +148,7 @@ export default function DetailScreen() {
         <MetadataEditor
           book={book}
           onUpdate={handleMetadataUpdate}
+          onTagsUpdate={handleTagsUpdate}
         />
       </div>
     </div>

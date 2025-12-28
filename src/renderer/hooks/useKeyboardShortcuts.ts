@@ -23,6 +23,16 @@ interface ShortcutHandlers {
 export function useKeyboardShortcuts(handlers: ShortcutHandlers) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // 入力フィールドにフォーカスがある場合はショートカットを無効化
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
       // Ctrl/Cmd キーの組み合わせ
       if (e.ctrlKey || e.metaKey) {
         switch (e.key) {

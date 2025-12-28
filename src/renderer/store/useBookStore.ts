@@ -66,6 +66,8 @@ export const useBookStore = create<BookStore>((set, get) => ({
   updateBook: async (id, updates) => {
     try {
       const updatedBook = await window.electronAPI.books.update(id, updates as any);
+
+      // ZustandのBookStoreを更新
       const books = get().books.map(b => b.id === id ? updatedBook : b);
       set({ books });
 
@@ -73,6 +75,10 @@ export const useBookStore = create<BookStore>((set, get) => ({
       if (get().selectedBook?.id === id) {
         set({ selectedBook: updatedBook });
       }
+
+      // TabStore側も同期 (ここが重要)
+      const { useTabStore } = await import('./useTabStore');
+      useTabStore.getState().updateBookInTabs(updatedBook);
     } catch (error) {
       console.error('本の更新エラー:', error);
     }

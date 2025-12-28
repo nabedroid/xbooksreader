@@ -1,7 +1,7 @@
 /**
  * Window APIの型定義
  */
-import type { Book, BookInput, Tag, Bookmark, BookmarkInput, SearchFilter, ScanProgress, MetadataExtractionOptions } from '@/types';
+import type { Book, BookInput, Tag, Bookmark, BookmarkInput, SearchFilter, ScanProgress, MetadataExtractionOptions, ScrapedBook } from '@/types';
 
 declare global {
   interface Window {
@@ -56,6 +56,11 @@ declare global {
         importMetadata: (path: string) => Promise<number>;
         createBackup: (path: string) => Promise<void>;
         restoreBackup: (path: string) => Promise<void>;
+      };
+
+      // メタデータWeb取得
+      metadata: {
+        search: (query: string) => Promise<ScrapedBook[]>;
       };
 
       // ユーティリティ

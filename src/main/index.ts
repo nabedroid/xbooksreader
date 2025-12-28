@@ -6,6 +6,10 @@ import path from 'path';
 import fs from 'fs';
 import { initDatabase, closeDatabase } from './database/db';
 
+// DevToolsのAutofillエラー抑制
+app.commandLine.appendSwitch('disable-autofill');
+app.commandLine.appendSwitch('disable-features', 'Autofill');
+
 // ログ出力用のペルパー（コマンドラインで見えない場合のため）
 const logPath = app.isPackaged
   ? path.join(path.dirname(app.getPath('exe')), 'startup_debug.log')

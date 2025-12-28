@@ -10,6 +10,7 @@ import * as BookmarkModel from '../database/models/Bookmark';
 import * as Scanner from '../services/scanner';
 import * as ImageLoader from '../services/imageLoader';
 import * as BackupService from '../services/backupService';
+import { searchWebMetadata } from '../services/metadataScraper';
 
 /**
  * IPCハンドラーを登録
@@ -136,6 +137,11 @@ export function registerIpcHandlers() {
 
   ipcMain.handle('backup:restoreBackup', async (_event, backupPath: string) => {
     return BackupService.restoreBackup(backupPath);
+  });
+
+  // Webメタデータ検索
+  ipcMain.handle('metadata:search', async (_event, query: string) => {
+    return searchWebMetadata(query);
   });
 
   // ファイル/フォルダ選択ダイアログ

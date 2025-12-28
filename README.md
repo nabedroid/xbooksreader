@@ -13,13 +13,12 @@
 - **画像ビューワー**: ズーム、ページナビゲーション機能
 - **バックアップ/エクスポート**: メタデータのJSON出力・データベースバックアップ
 - **ポータブル**: インストール不要、単一EXEで動作
-- **Docker対応**: 開発環境を汚さずにビルド可能
 
 ## 技術スタック
 
 - **フレームワーク**: Electron 28+
 - **UI**: React 18 + TypeScript
-- **データベース**: SQLite (better-sqlite3)
+- **データベース**: SQLite
 - **画像処理**: sharp
 - **ZIP処理**: yauzl
 - **状態管理**: Zustand
@@ -29,32 +28,19 @@
 
 ### 前提条件
 
-- Node.js 20+
-- pnpm (推奨) または npm
-- Docker (オプション)
+- Windows 10/11
 
 ### インストール
 
 ```bash
 # 依存関係をインストール
-pnpm install
+npm install
 
 # 開発サーバーを起動
-pnpm dev
+npm run dev
 
 # ビルド
-pnpm build
-```
-
-### Docker環境での開発
-
-```bash
-# Dockerコンテナをビルドして起動
-cd docker
-docker-compose up
-
-# コンテナ内でシェルを開く
-docker-compose exec app bash
+npm run build
 ```
 
 ## プロジェクト構造

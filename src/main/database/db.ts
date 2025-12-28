@@ -7,12 +7,16 @@ import { app, dialog } from 'electron';
 import initialSql from './migrations/001_initial.sql?raw';
 import expansionSql from './migrations/002_metadata_expansion.sql?raw';
 import characterExpansionSql from './migrations/003_add_characters_column.sql?raw';
+import updateRatingConstraintSql from './migrations/004_update_rating_constraint.sql?raw';
+import normalizeMetadataSql from './migrations/005_normalize_metadata.sql?raw';
 
 let db: sqlite3.Database | null = null;
 const migrations = [
   { version: 1, sql: initialSql },
   { version: 2, sql: expansionSql },
   { version: 3, sql: characterExpansionSql },
+  { version: 4, sql: updateRatingConstraintSql },
+  { version: 5, sql: normalizeMetadataSql },
 ];
 
 /**
@@ -81,6 +85,7 @@ async function runMigrations(database: sqlite3.Database): Promise<void> {
         console.log(`現在のDBバージョン: ${currentVersion}`);
 
         try {
+          let migrated = false;
           for (const migration of migrations) {
             if (migration.version > currentVersion) {
               console.log(`マイグレーション ${migration.version} を適用中...`);
@@ -90,8 +95,16 @@ async function runMigrations(database: sqlite3.Database): Promise<void> {
                   else res();
                 });
               });
+              if (migration.version === 5) migrated = true;
             }
           }
+
+          // バージョン5（正規化）が適用された場合、既存データを移行
+          if (migrated) {
+            const { migrateOldMetadata } = await import('./models/Book');
+            await migrateOldMetadata();
+          }
+
           resolve();
         } catch (execErr) {
           reject(execErr);

@@ -41,15 +41,16 @@ export default function BookshelfScreen() {
   };
 
   const handleSort = (newSortBy: typeof sortBy) => {
+    const { searchFilter } = useBookStore.getState();
     if (sortBy === newSortBy) {
       // 同じ項目なら順序を反転
       const nextOrder = sortOrder === 'asc' ? 'desc' : 'asc';
       setSortOrder(nextOrder);
-      searchBooks({ sortBy: newSortBy, sortOrder: nextOrder });
+      searchBooks({ ...searchFilter, sortBy: newSortBy, sortOrder: nextOrder });
     } else {
       setSortBy(newSortBy);
       setSortOrder('desc');
-      searchBooks({ sortBy: newSortBy, sortOrder: 'desc' });
+      searchBooks({ ...searchFilter, sortBy: newSortBy, sortOrder: 'desc' });
     }
   };
 
@@ -86,9 +87,10 @@ export default function BookshelfScreen() {
               <option value="rating">評価</option>
             </select>
             <button onClick={() => {
+              const { searchFilter } = useBookStore.getState();
               const nextOrder = sortOrder === 'asc' ? 'desc' : 'asc';
               setSortOrder(nextOrder);
-              searchBooks({ sortBy, sortOrder: nextOrder });
+              searchBooks({ ...searchFilter, sortBy, sortOrder: nextOrder });
             }}>
               {sortOrder === 'asc' ? '↑' : '↓'}
             </button>
@@ -103,7 +105,10 @@ export default function BookshelfScreen() {
         <aside className={styles.sidebar}>
           <SearchPanel
             onSearch={handleSearch}
-            onClear={() => loadBooks()}
+            onClear={() => {
+              useBookStore.getState().setSearchFilter({});
+              loadBooks();
+            }}
           />
         </aside>
 

@@ -10,11 +10,11 @@ export interface Book {
   path: string;
   type: 'folder' | 'zip';
   title: string | null;
-  series: string | null;
-  author: string | null;
-  circle: string | null;
-  original_work: string | null;
-  characters: string | null;
+  series: string[];
+  author: string[];
+  circle: string[];
+  original_work: string[];
+  characters: string[];
   rating: number;
   favorite: boolean;
   thumbnail: string | null;
@@ -33,11 +33,11 @@ export interface BookInput {
   path: string;
   type: 'folder' | 'zip';
   title?: string;
-  series?: string;
-  author?: string;
-  circle?: string;
-  original_work?: string;
-  characters?: string;
+  series?: string | string[];
+  author?: string | string[];
+  circle?: string | string[];
+  original_work?: string | string[];
+  characters?: string | string[];
   rating?: number;
   favorite?: boolean;
   thumbnail?: Buffer;
@@ -109,4 +109,18 @@ export interface ScanProgress {
 export interface MetadataExtractionOptions {
   enabled: boolean;
   pathPattern?: 'series/character/title' | 'custom';
+}
+
+/**
+ * Webから取得した本の情報
+ */
+export interface ScrapedBook {
+  title: string;
+  circle?: string;
+  author?: string;
+  tags: string[];
+  description?: string;
+  imageUrl?: string;
+  siteName: 'DLsite' | 'FANZA';
+  url: string;
 }

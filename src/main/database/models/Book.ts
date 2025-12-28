@@ -9,33 +9,99 @@ import type { Book, BookInput, SearchFilter } from '@/types';
  */
 export async function createBook(input: BookInput): Promise<Book> {
   const result = await dbQuery.run(`
-    INSERT INTO books (path, type, title, series, author, circle, original_work, characters, rating, favorite, thumbnail, page_count)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO books (path, type, title, rating, favorite, thumbnail, page_count)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `, [
     input.path,
     input.type,
     input.title || null,
-    input.series || null,
-    input.author || null,
-    input.circle || null,
-    input.original_work || null,
-    input.characters || null,
     input.rating || 0,
     input.favorite ? 1 : 0,
     input.thumbnail || null,
     input.page_count || null
   ]);
 
-  const book = await getBookById(result.lastID);
+  const bookId = result.lastID;
+
+  // メタデータの保存
+  if (input.series) await setBookMetadata(bookId, 'series', parseMultiValue(input.series));
+  if (input.author) await setBookMetadata(bookId, 'author', parseMultiValue(input.author));
+  if (input.circle) await setBookMetadata(bookId, 'circle', parseMultiValue(input.circle));
+  if (input.original_work) await setBookMetadata(bookId, 'original_work', parseMultiValue(input.original_work));
+  if (input.characters) await setBookMetadata(bookId, 'characters', parseMultiValue(input.characters));
+
+  const book = await getBookById(bookId);
   return book!;
+}
+
+/**
+ * カンマ区切りをパースするヘルパー
+ */
+function parseMultiValue(val: string | string[]): string[] {
+  if (Array.isArray(val)) return val;
+  return val.split(',').map(s => s.trim()).filter(Boolean);
+}
+
+/**
+ * メタデータを設定
+ */
+async function setBookMetadata(bookId: number, type: string, names: string[]) {
+  // 既存の関連を削除
+  await dbQuery.run(`
+    DELETE FROM book_metadata 
+    WHERE book_id = ? AND metadata_id IN (SELECT id FROM metadata WHERE type = ?)
+  `, [bookId, type]);
+
+  for (const name of names) {
+    if (!name.trim()) continue;
+
+    // マスターに登録（存在しなければ）
+    await dbQuery.run('INSERT OR IGNORE INTO metadata (type, name) VALUES (?, ?)', [type, name.trim()]);
+
+    // IDを取得
+    const item = await dbQuery.get<{ id: number }>('SELECT id FROM metadata WHERE type = ? AND name = ?', [type, name.trim()]);
+    if (item) {
+      // 関連付け
+      await dbQuery.run('INSERT OR IGNORE INTO book_metadata (book_id, metadata_id) VALUES (?, ?)', [bookId, item.id]);
+    }
+  }
+}
+
+/**
+ * 指定したタイプのメタデータを取得
+ */
+async function getBookMetadataByType(bookId: number, type: string): Promise<string[]> {
+  const rows = await dbQuery.all<{ name: string }>(`
+    SELECT m.name FROM metadata m
+    JOIN book_metadata bm ON m.id = bm.metadata_id
+    WHERE bm.book_id = ? AND m.type = ?
+    ORDER BY m.name ASC
+  `, [bookId, type]);
+  return rows.map(r => r.name);
 }
 
 /**
  * DBの結果をBook型に変換
  */
-function mapBook(row: any): Book {
+async function mapBook(row: any): Promise<Book> {
+  const bookId = row.id;
+
+  // 各メタデータを取得
+  const [series, author, circle, original_work, characters] = await Promise.all([
+    getBookMetadataByType(bookId, 'series'),
+    getBookMetadataByType(bookId, 'author'),
+    getBookMetadataByType(bookId, 'circle'),
+    getBookMetadataByType(bookId, 'original_work'),
+    getBookMetadataByType(bookId, 'characters'),
+  ]);
+
   return {
     ...row,
+    series,
+    author,
+    circle,
+    original_work,
+    characters,
     favorite: row.favorite === 1,
     thumbnail: row.thumbnail ? Buffer.from(row.thumbnail).toString('base64') : null,
   };
@@ -60,7 +126,7 @@ export async function getBookByPath(path: string): Promise<Book | null> {
 /**
  * 本を更新
  */
-export async function updateBook(id: number, input: Partial<BookInput>): Promise<Book | null> {
+export async function updateBook(id: number, input: Partial<BookInput | any>): Promise<Book | null> {
   const fields: string[] = [];
   const values: any[] = [];
 
@@ -68,26 +134,15 @@ export async function updateBook(id: number, input: Partial<BookInput>): Promise
     fields.push('title = ?');
     values.push(input.title);
   }
-  if (input.series !== undefined) {
-    fields.push('series = ?');
-    values.push(input.series);
-  }
-  if (input.author !== undefined) {
-    fields.push('author = ?');
-    values.push(input.author);
-  }
-  if (input.circle !== undefined) {
-    fields.push('circle = ?');
-    values.push(input.circle);
-  }
-  if (input.original_work !== undefined) {
-    fields.push('original_work = ?');
-    values.push(input.original_work);
-  }
-  if (input.characters !== undefined) {
-    fields.push('characters = ?');
-    values.push(input.characters);
-  }
+
+  // メタデータ項目は別のテーブルで管理するため、booksテーブルのカラムは（もしあれば）更新不要か同期のみ行う
+  // ここでは正規化テーブルのみを更新する
+  if (input.series !== undefined) await setBookMetadata(id, 'series', parseMultiValue(input.series));
+  if (input.author !== undefined) await setBookMetadata(id, 'author', parseMultiValue(input.author));
+  if (input.circle !== undefined) await setBookMetadata(id, 'circle', parseMultiValue(input.circle));
+  if (input.original_work !== undefined) await setBookMetadata(id, 'original_work', parseMultiValue(input.original_work));
+  if (input.characters !== undefined) await setBookMetadata(id, 'characters', parseMultiValue(input.characters));
+
   if (input.rating !== undefined) {
     fields.push('rating = ?');
     values.push(input.rating);
@@ -113,19 +168,18 @@ export async function updateBook(id: number, input: Partial<BookInput>): Promise
     values.push(input.last_read_at);
   }
 
-  if (fields.length === 0) {
-    return getBookById(id);
+  if (fields.length > 0) {
+    fields.push('updated_at = CURRENT_TIMESTAMP');
+    values.push(id);
+
+    await dbQuery.run(`
+      UPDATE books SET ${fields.join(', ')} WHERE id = ?
+    `, values);
   }
-
-  fields.push('updated_at = CURRENT_TIMESTAMP');
-  values.push(id);
-
-  await dbQuery.run(`
-    UPDATE books SET ${fields.join(', ')} WHERE id = ?
-  `, values);
 
   return getBookById(id);
 }
+
 
 /**
  * 本を削除
@@ -142,40 +196,40 @@ export async function searchBooks(filter: SearchFilter = {}): Promise<Book[]> {
   let query = 'SELECT * FROM books WHERE 1=1';
   const params: any[] = [];
 
-  // テキスト検索
+  // テキスト検索 (タイトルまたはメタデータ名に部分一致)
   if (filter.query) {
-    query += ' AND (title LIKE ? OR series LIKE ? OR author LIKE ? OR circle LIKE ? OR original_work LIKE ? OR characters LIKE ?)';
+    query += ' AND (title LIKE ? OR id IN (SELECT book_id FROM book_metadata bm JOIN metadata m ON bm.metadata_id = m.id WHERE m.name LIKE ?))';
     const searchTerm = `%${filter.query}%`;
-    params.push(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
+    params.push(searchTerm, searchTerm);
   }
 
-  // シリーズフィルター
+  // シリーズフィルター (部分一致)
   if (filter.series) {
-    query += ' AND series LIKE ?';
+    query += " AND id IN (SELECT book_id FROM book_metadata bm JOIN metadata m ON bm.metadata_id = m.id WHERE m.type = 'series' AND m.name LIKE ?)";
     params.push(`%${filter.series}%`);
   }
 
-  // 作者フィルター
+  // 作者フィルター (部分一致)
   if (filter.author) {
-    query += ' AND author LIKE ?';
+    query += " AND id IN (SELECT book_id FROM book_metadata bm JOIN metadata m ON bm.metadata_id = m.id WHERE m.type = 'author' AND m.name LIKE ?)";
     params.push(`%${filter.author}%`);
   }
 
-  // サークルフィルター
+  // サークルフィルター (部分一致)
   if (filter.circle) {
-    query += ' AND circle LIKE ?';
+    query += " AND id IN (SELECT book_id FROM book_metadata bm JOIN metadata m ON bm.metadata_id = m.id WHERE m.type = 'circle' AND m.name LIKE ?)";
     params.push(`%${filter.circle}%`);
   }
 
-  // 原作フィルター
+  // 原作フィルター (部分一致)
   if (filter.original_work) {
-    query += ' AND original_work LIKE ?';
+    query += " AND id IN (SELECT book_id FROM book_metadata bm JOIN metadata m ON bm.metadata_id = m.id WHERE m.type = 'original_work' AND m.name LIKE ?)";
     params.push(`%${filter.original_work}%`);
   }
 
-  // キャラクターフィルター
+  // キャラクターフィルター (部分一致)
   if (filter.characters) {
-    query += ' AND characters LIKE ?';
+    query += " AND id IN (SELECT book_id FROM book_metadata bm JOIN metadata m ON bm.metadata_id = m.id WHERE m.type = 'characters' AND m.name LIKE ?)";
     params.push(`%${filter.characters}%`);
   }
 
@@ -222,7 +276,7 @@ export async function searchBooks(filter: SearchFilter = {}): Promise<Book[]> {
   }
 
   const rows = await dbQuery.all<any>(query, params);
-  return rows.map(mapBook);
+  return Promise.all(rows.map(mapBook));
 }
 
 /**
@@ -230,7 +284,7 @@ export async function searchBooks(filter: SearchFilter = {}): Promise<Book[]> {
  */
 export async function getAllBooks(): Promise<Book[]> {
   const rows = await dbQuery.all<any>('SELECT * FROM books ORDER BY created_at DESC');
-  return rows.map(mapBook);
+  return Promise.all(rows.map(mapBook));
 }
 
 /**
@@ -241,33 +295,33 @@ export async function getBooksCount(filter: SearchFilter = {}): Promise<number> 
   const params: any[] = [];
 
   if (filter.query) {
-    query += ' AND (title LIKE ? OR series LIKE ? OR author LIKE ? OR circle LIKE ? OR original_work LIKE ? OR characters LIKE ?)';
+    query += ' AND (title LIKE ? OR id IN (SELECT book_id FROM book_metadata bm JOIN metadata m ON bm.metadata_id = m.id WHERE m.name LIKE ?))';
     const searchTerm = `%${filter.query}%`;
-    params.push(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
+    params.push(searchTerm, searchTerm);
   }
 
   if (filter.series) {
-    query += ' AND series LIKE ?';
+    query += " AND id IN (SELECT book_id FROM book_metadata bm JOIN metadata m ON bm.metadata_id = m.id WHERE m.type = 'series' AND m.name LIKE ?)";
     params.push(`%${filter.series}%`);
   }
 
   if (filter.author) {
-    query += ' AND author LIKE ?';
+    query += " AND id IN (SELECT book_id FROM book_metadata bm JOIN metadata m ON bm.metadata_id = m.id WHERE m.type = 'author' AND m.name LIKE ?)";
     params.push(`%${filter.author}%`);
   }
 
   if (filter.circle) {
-    query += ' AND circle LIKE ?';
+    query += " AND id IN (SELECT book_id FROM book_metadata bm JOIN metadata m ON bm.metadata_id = m.id WHERE m.type = 'circle' AND m.name LIKE ?)";
     params.push(`%${filter.circle}%`);
   }
 
   if (filter.original_work) {
-    query += ' AND original_work LIKE ?';
+    query += " AND id IN (SELECT book_id FROM book_metadata bm JOIN metadata m ON bm.metadata_id = m.id WHERE m.type = 'original_work' AND m.name LIKE ?)";
     params.push(`%${filter.original_work}%`);
   }
 
   if (filter.characters) {
-    query += ' AND characters LIKE ?';
+    query += " AND id IN (SELECT book_id FROM book_metadata bm JOIN metadata m ON bm.metadata_id = m.id WHERE m.type = 'characters' AND m.name LIKE ?)";
     params.push(`%${filter.characters}%`);
   }
 
@@ -285,6 +339,17 @@ export async function getBooksCount(filter: SearchFilter = {}): Promise<number> 
     params.push(filter.favorite ? 1 : 0);
   }
 
+  // タグ
+  if (filter.tags && filter.tags.length > 0) {
+    query += ` AND id IN (
+      SELECT book_id FROM book_tags
+      WHERE tag_id IN (SELECT id FROM tags WHERE name IN (${filter.tags.map(() => '?').join(', ')}))
+      GROUP BY book_id
+      HAVING COUNT(DISTINCT tag_id) = ?
+    )`;
+    params.push(...filter.tags, filter.tags.length);
+  }
+
   const result = await dbQuery.get<{ count: number }>(query, params);
   return result ? result.count : 0;
 }
@@ -300,21 +365,29 @@ export async function incrementReadCount(id: number): Promise<void> {
  * 指定したフィールドのユニークなリストを取得
  */
 export async function getMetadataList(field: 'series' | 'author' | 'circle' | 'original_work' | 'characters'): Promise<string[]> {
-  const rows = await dbQuery.all<any>(`
-    SELECT DISTINCT ${field} FROM books 
-    WHERE ${field} IS NOT NULL AND ${field} != '' 
-  `);
+  const rows = await dbQuery.all<{ name: string }>(`
+    SELECT name FROM metadata 
+    WHERE type = ? 
+    ORDER BY name ASC
+  `, [field]);
 
-  const resultSet = new Set<string>();
-  rows.forEach(row => {
-    const value = row[field];
-    if (value) {
-      value.split(',').forEach((v: string) => {
-        const trimmed = v.trim();
-        if (trimmed) resultSet.add(trimmed);
-      });
-    }
-  });
+  return rows.map(r => r.name);
+}
 
-  return Array.from(resultSet).sort();
+/**
+ * 旧データから新メタデータテーブルへ移行する (1回限り)
+ */
+export async function migrateOldMetadata() {
+  const books = await dbQuery.all<any>('SELECT * FROM books');
+  console.log(`${books.length}件の本のメタデータを移行中...`);
+
+  for (const book of books) {
+    if (book.series) await setBookMetadata(book.id, 'series', parseMultiValue(book.series));
+    if (book.author) await setBookMetadata(book.id, 'author', parseMultiValue(book.author));
+    if (book.circle) await setBookMetadata(book.id, 'circle', parseMultiValue(book.circle));
+    if (book.original_work) await setBookMetadata(book.id, 'original_work', parseMultiValue(book.original_work));
+    if (book.characters) await setBookMetadata(book.id, 'characters', parseMultiValue(book.characters));
+  }
+
+  console.log('メタデータの移行が完了しました。');
 }

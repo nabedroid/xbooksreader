@@ -20,7 +20,8 @@ export default function ThumbnailGrid({ books, onBookClick, selectedBookId, grid
   };
 
   const renderStars = (rating: number) => {
-    return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+    const r = Math.min(10, Math.max(0, rating));
+    return '★'.repeat(r) + '☆'.repeat(Math.max(0, 10 - r));
   };
 
   return (
@@ -51,11 +52,11 @@ export default function ThumbnailGrid({ books, onBookClick, selectedBookId, grid
             </div>
             <div className={styles.info}>
               <h4 className={styles.title}>{book.title || '無題'}</h4>
-              {book.original_work && (
-                <p className={styles.originalWork}>{book.original_work}</p>
+              {book.original_work && book.original_work.length > 0 && (
+                <p className={styles.originalWork}>{book.original_work.join(', ')}</p>
               )}
-              {book.author && (
-                <p className={styles.author}>{book.author}</p>
+              {book.author && book.author.length > 0 && (
+                <p className={styles.author}>{book.author.join(', ')}</p>
               )}
             </div>
           </div>
