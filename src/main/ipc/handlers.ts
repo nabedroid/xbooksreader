@@ -3,7 +3,7 @@
  * レンダラープロセスからのリクエストを処理
  */
 import { ipcMain, BrowserWindow, dialog } from 'electron';
-import Jimp from 'jimp';
+import sharp from 'sharp';
 import * as BookModel from '../database/models/Book';
 import * as TagModel from '../database/models/Tag';
 import * as BookmarkModel from '../database/models/Bookmark';
@@ -110,12 +110,11 @@ export function registerIpcHandlers() {
 
   ipcMain.handle('images:getThumbnail', async (_event, bookId: number, pageNumber: number) => {
     const buffer = await ImageLoader.loadImage(bookId, pageNumber);
-    const image = await Jimp.read(buffer);
-    const thumbnail = await image
-      .resize(200, Jimp.AUTO)
-      .quality(80)
-      .getBufferAsync(Jimp.MIME_JPEG);
-    return thumbnail.toString('base64');
+    const thumbnailBuffer = await sharp(buffer)
+      .resize(200, null, { fit: 'inside' }) // 幅200、高さ自動（アスペクト比維持）
+      .toFormat('jpeg', { quality: 80 })
+      .toBuffer();
+    return thumbnailBuffer.toString('base64');
   });
 
   ipcMain.handle('images:getPages', async (_event, bookId: number) => {

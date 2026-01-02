@@ -1,7 +1,7 @@
 /**
  * サムネイル生成サービス
  */
-import Jimp from 'jimp';
+import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 
@@ -18,13 +18,11 @@ export async function generateThumbnail(
 ): Promise<Buffer> {
   const imageBuffer = await loadImage(bookPath, type, pageNumber);
 
-  // jimpでサムネイルを生成
-  const image = await Jimp.read(imageBuffer);
-  
-  return image
-    .scaleToFit(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT)
-    .quality(85)
-    .getBufferAsync(Jimp.MIME_JPEG);
+  // sharpでサムネイルを生成
+  return sharp(imageBuffer)
+    .resize(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .toFormat('jpeg', { quality: 85 })
+    .toBuffer();
 }
 
 /**

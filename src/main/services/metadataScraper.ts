@@ -12,7 +12,7 @@ const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
  * HTMLを取得するヘルパー関数
  * Node.js 18以降のfetchを使用
  */
-async function fetchHtml(url: string, headers: Record<string, string> = {}): Promise<string> {
+async function fetchHtml(url: string, headers: Record<string, string> = {}, ignore404: boolean = false): Promise<string> {
   const response = await fetch(url, {
     headers: {
       'User-Agent': USER_AGENT,
@@ -21,6 +21,9 @@ async function fetchHtml(url: string, headers: Record<string, string> = {}): Pro
   });
 
   if (!response.ok) {
+    if (ignore404 && response.status === 404) {
+      return '';
+    }
     throw new Error(`HTTP error! status: ${response.status}`);
   }
 
@@ -127,7 +130,8 @@ async function searchFANZA(query: string): Promise<ScrapedBook[]> {
   console.log(searchUrl);
 
   try {
-    const html = await fetchHtml(searchUrl, { 'Cookie': 'age_check_done=1;' });
+    const html = await fetchHtml(searchUrl, { 'Cookie': 'age_check_done=1;' }, true);
+    if (!html) return [];
 
     const $ = cheerio.load(html);
     const items = $('.productList__item').toArray();

@@ -19,7 +19,7 @@ export default defineConfig({
           build: {
             outDir: 'dist-electron/main',
             rollupOptions: {
-              external: ['electron', 'sqlite3', 'yauzl', 'cheerio'],
+              external: ['electron', 'sqlite3', 'yauzl', 'cheerio', 'sharp'],
             },
           },
         },

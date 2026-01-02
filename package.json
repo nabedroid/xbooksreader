@@ -15,14 +15,14 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\""
   },
   "dependencies": {
-    "jimp": "^0.22.10",
+    "cheerio": "^1.1.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.21.1",
+    "sharp": "^0.34.5",
     "sqlite3": "^5.1.7",
     "yauzl": "^2.10.0",
-    "zustand": "^4.4.7",
-    "cheerio": "^1.1.2"
+    "zustand": "^4.4.7"
   },
   "devDependencies": {
     "@types/node": "^20.10.6",
@@ -43,9 +43,9 @@
     "rimraf": "^5.0.5",
     "typescript": "^5.3.3",
     "vite": "^5.0.10",
-    "vitest": "^1.1.0",
     "vite-plugin-electron": "^0.28.1",
-    "vite-plugin-electron-renderer": "^0.14.5"
+    "vite-plugin-electron-renderer": "^0.14.5",
+    "vitest": "^1.1.0"
   },
   "author": "",
   "license": "MIT"
