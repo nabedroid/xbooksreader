@@ -14,6 +14,7 @@ declare global {
         create: (book: BookInput) => Promise<Book>;
         update: (id: number, book: Partial<BookInput>) => Promise<Book>;
         delete: (id: number) => Promise<boolean>;
+        updatePath: (oldPath: string, newPath: string, dryRun: boolean) => Promise<number>;
         incrementReadCount: (id: number) => Promise<void>;
         getMetadataList: (field: 'series' | 'author' | 'circle' | 'original_work' | 'characters') => Promise<string[]>;
         getCount: (filter: SearchFilter) => Promise<number>;
@@ -48,6 +49,8 @@ declare global {
         load: (bookId: number, pageNumber: number) => Promise<string>; // Base64
         getThumbnail: (bookId: number, pageNumber: number) => Promise<string>; // Base64
         getPages: (bookId: number) => Promise<string[]>;
+        convert: (options: any) => Promise<any>;
+        onProgress: (callback: (progress: any) => void) => void;
       };
 
       // バックアップ/エクスポート
@@ -68,6 +71,10 @@ declare global {
         selectDirectory: () => Promise<string | null>;
         onMenuNavigate: (callback: (path: string) => void) => () => void;
         onMenuAction: (callback: (action: string) => void) => () => void;
+        onMenuPathReplace: (callback: () => void) => () => void;
+        onMenuImageConvert: (callback: () => void) => () => void;
+        showConfirm: (message: string) => Promise<boolean>;
+        showAlert: (message: string) => Promise<void>;
       };
     };
   }

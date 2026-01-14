@@ -84,6 +84,23 @@ function createWindow() {
         ]
       },
       {
+        label: '変換',
+        submenu: [
+          {
+            label: 'パス一括置換',
+            click: () => {
+              mainWindow?.webContents.send('menu:open-path-replace');
+            }
+          },
+          {
+            label: '画像形式変換',
+            click: () => {
+              mainWindow?.webContents.send('menu:open-image-convert');
+            }
+          }
+        ]
+      },
+      {
         label: 'ウィンドウ',
         submenu: [
           { role: 'minimize' },

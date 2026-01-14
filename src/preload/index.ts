@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     update: (id: number, book: any) => ipcRenderer.invoke('books:update', id, book),
     delete: (id: number) => ipcRenderer.invoke('books:delete', id),
     incrementReadCount: (id: number) => ipcRenderer.invoke('books:incrementReadCount', id),
+    updatePath: (oldPath: string, newPath: string, dryRun: boolean) => ipcRenderer.invoke('books:updatePath', oldPath, newPath, dryRun),
     getMetadataList: (field: string) => ipcRenderer.invoke('books:getMetadataList', field),
     getCount: (filter: any) => ipcRenderer.invoke('books:getCount', filter),
   },
@@ -50,6 +51,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     load: (bookId: number, pageNumber: number) => ipcRenderer.invoke('images:load', bookId, pageNumber),
     getThumbnail: (bookId: number, pageNumber: number) => ipcRenderer.invoke('images:getThumbnail', bookId, pageNumber),
     getPages: (bookId: number) => ipcRenderer.invoke('images:getPages', bookId),
+    convert: (options: any) => ipcRenderer.invoke('images:convert', options),
+    onProgress: (callback: (progress: any) => void) => {
+      ipcRenderer.on('convert:progress', (_event, progress) => callback(progress));
+    },
   },
 
   // バックアップ/エクスポート
@@ -78,5 +83,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.on('menu:action', subscription);
       return () => ipcRenderer.removeListener('menu:action', subscription);
     },
+    onMenuPathReplace: (callback: () => void) => {
+      const subscription = () => callback();
+      ipcRenderer.on('menu:open-path-replace', subscription);
+      return () => ipcRenderer.removeListener('menu:open-path-replace', subscription);
+    },
+    onMenuImageConvert: (callback: () => void) => {
+      const subscription = () => callback();
+      ipcRenderer.on('menu:open-image-convert', subscription);
+      return () => ipcRenderer.removeListener('menu:open-image-convert', subscription);
+    },
+    showConfirm: (message: string) => ipcRenderer.invoke('utils:showConfirm', message),
+    showAlert: (message: string) => ipcRenderer.invoke('utils:showAlert', message),
   },
 });

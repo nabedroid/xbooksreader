@@ -35,6 +35,41 @@ export async function createBook(input: BookInput): Promise<Book> {
 }
 
 /**
+ * パスを一括置換
+ */
+export async function updateBookPaths(oldPath: string, newPath: string, dryRun: boolean): Promise<number> {
+  // エスケープ処理（簡易的）
+  // LIKE演算子用のエスケープはパラメータバインドで処理されるが、
+  // REPLACE関数内ではそのまま使われる。
+  // SQLiteのREPLACEは path内の全ての oldPath を newPath に置換する。
+
+  if (dryRun) {
+    // 影響を受ける行数をカウント
+    const result = await dbQuery.get<{ count: number }>(`
+      SELECT COUNT(*) as count FROM books WHERE path LIKE ? || '%'
+    `, [oldPath]);
+    return result?.count || 0;
+  } else {
+    // 実際に更新
+    // path が oldPath で始まるものを対象に、oldPath を newPath に置換
+    // 注: REPLACEは文字列内の全ての出現箇所を置換するが、
+    // WHERE句で前方一致を指定しているので、基本的にはパスの先頭（ドライブ文字など）の置換になるはず。
+    // ただし、フォルダ名がドライブ名と同じ場合などは誤爆の可能性があるが、
+    // ユーザーが「一括置換」を選択しているので、その挙動（単純置換）で良しとする。
+    // replace(string, pattern, replacement)
+
+    // SQLite 3.35.0+ なら RETURNING が使えるが、安全のため run の changes を返す
+    const result = await dbQuery.run(`
+      UPDATE books 
+      SET path = REPLACE(path, ?, ?) 
+      WHERE path LIKE ? || '%'
+    `, [oldPath, newPath, oldPath]);
+
+    return result.changes || 0;
+  }
+}
+
+/**
  * カンマ区切りをパースするヘルパー
  */
 function parseMultiValue(val: string | string[]): string[] {

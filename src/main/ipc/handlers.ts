@@ -11,6 +11,7 @@ import * as Scanner from '../services/scanner';
 import * as ImageLoader from '../services/imageLoader';
 import * as BackupService from '../services/backupService';
 import { searchWebMetadata } from '../services/metadataScraper';
+import { convertImages, ConvertOptions } from '../services/imageConverter';
 
 /**
  * IPCハンドラーを登録
@@ -47,6 +48,10 @@ export function registerIpcHandlers() {
 
   ipcMain.handle('books:incrementReadCount', (_event, id: number) => {
     return BookModel.incrementReadCount(id);
+  });
+
+  ipcMain.handle('books:updatePath', (_event, oldPath: string, newPath: string, dryRun: boolean = false) => {
+    return BookModel.updateBookPaths(oldPath, newPath, dryRun);
   });
 
   ipcMain.handle('books:getMetadataList', (_event, field: any) => {
@@ -121,6 +126,12 @@ export function registerIpcHandlers() {
     return ImageLoader.getBookPages(bookId);
   });
 
+  ipcMain.handle('images:convert', async (event, options: ConvertOptions) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (!window) return { success: 0, failed: 0 };
+    return convertImages(options, window);
+  });
+
   // バックアップ/エクスポート
   ipcMain.handle('backup:exportMetadata', async (_event, exportPath: string) => {
     return BackupService.exportMetadata(exportPath);
@@ -157,6 +168,36 @@ export function registerIpcHandlers() {
     }
 
     return result.filePaths[0];
+  });
+
+  // 確認ダイアログ
+  ipcMain.handle('utils:showConfirm', async (event, message: string) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (!window) return false;
+
+    const result = await dialog.showMessageBox(window, {
+      type: 'question',
+      buttons: ['Yes', 'No'],
+      defaultId: 0,
+      cancelId: 1,
+      title: '確認',
+      message: message,
+    });
+
+    return result.response === 0;
+  });
+
+  // アラートダイアログ
+  ipcMain.handle('utils:showAlert', async (event, message: string) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (!window) return;
+
+    await dialog.showMessageBox(window, {
+      type: 'info',
+      buttons: ['OK'],
+      title: '通知',
+      message: message,
+    });
   });
 
   console.log('IPCハンドラーを登録しました');

@@ -9,4 +9,6 @@ release
 *.db-wal
 *.md
 !README.md
-/tmp
+/tmp*
+/convert.bat
+/convert.js
