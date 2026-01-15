@@ -9,6 +9,8 @@ import expansionSql from './migrations/002_metadata_expansion.sql?raw';
 import characterExpansionSql from './migrations/003_add_characters_column.sql?raw';
 import updateRatingConstraintSql from './migrations/004_update_rating_constraint.sql?raw';
 import normalizeMetadataSql from './migrations/005_normalize_metadata.sql?raw';
+import casMigrationSql from './migrations/006_cas_migration.sql?raw';
+import fixBooksPathNullableSql from './migrations/007_fix_books_path_nullable.sql?raw';
 
 let db: sqlite3.Database | null = null;
 const migrations = [
@@ -17,6 +19,8 @@ const migrations = [
   { version: 3, sql: characterExpansionSql },
   { version: 4, sql: updateRatingConstraintSql },
   { version: 5, sql: normalizeMetadataSql },
+  { version: 6, sql: casMigrationSql },
+  { version: 7, sql: fixBooksPathNullableSql },
 ];
 
 /**
@@ -85,7 +89,9 @@ async function runMigrations(database: sqlite3.Database): Promise<void> {
         console.log(`現在のDBバージョン: ${currentVersion}`);
 
         try {
-          let migrated = false;
+          let migratedV5 = false;
+          let migratedV6 = false;
+
           for (const migration of migrations) {
             if (migration.version > currentVersion) {
               console.log(`マイグレーション ${migration.version} を適用中...`);
@@ -95,14 +101,23 @@ async function runMigrations(database: sqlite3.Database): Promise<void> {
                   else res();
                 });
               });
-              if (migration.version === 5) migrated = true;
+              if (migration.version === 5) migratedV5 = true;
+              if (migration.version === 6) migratedV6 = true;
             }
           }
 
           // バージョン5（正規化）が適用された場合、既存データを移行
-          if (migrated) {
+          if (migratedV5) {
             const { migrateOldMetadata } = await import('./models/Book');
             await migrateOldMetadata();
+          }
+
+          // バージョン6（CAS）が適用された場合、データ移行
+          if (migratedV6) {
+            console.log('CASアーキテクチャへのマイグレーションが適用されました。');
+            // TODO: データ移行ロジックを実装後に有効化
+            // const { migrateToCas } = await import('./models/Book');
+            // await migrateToCas();
           }
 
           resolve();

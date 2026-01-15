@@ -12,7 +12,7 @@ export async function createBook(input: BookInput): Promise<Book> {
     INSERT INTO books (path, type, title, rating, favorite, thumbnail, page_count)
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `, [
-    input.path,
+    input.path || null,
     input.type,
     input.title || null,
     input.rating || 0,
@@ -130,8 +130,31 @@ async function mapBook(row: any): Promise<Book> {
     getBookMetadataByType(bookId, 'characters'),
   ]);
 
+  // パスの解決: 既存のpathカラムがあればそれを使用、なければbook_locationsから取得
+  let resolvedPath = row.path;
+  let resolvedType = row.type;
+
+  if (!resolvedPath) {
+    // book_locationsからアクティブなロケーションを取得
+    const location = await dbQuery.get<any>(`
+      SELECT * FROM book_locations 
+      WHERE book_id = ? AND status = 'active' 
+      ORDER BY id ASC LIMIT 1
+    `, [bookId]);
+
+    if (location) {
+      // フルパスを構築
+      const path = await import('path');
+      resolvedPath = path.default.join(location.base_path, location.relative_path);
+      // typeはパスから推測
+      resolvedType = resolvedPath.toLowerCase().endsWith('.zip') ? 'zip' : 'folder';
+    }
+  }
+
   return {
     ...row,
+    path: resolvedPath,
+    type: resolvedType,
     series,
     author,
     circle,
@@ -425,4 +448,47 @@ export async function migrateOldMetadata() {
   }
 
   console.log('メタデータの移行が完了しました。');
+}
+
+/**
+ * ロケーションのない孤児メタデータを削除（CAS用）
+ * book_locationsにリンクがなく、pathもnullの本を削除
+ */
+export async function deleteOrphanBooks(): Promise<number> {
+  // book_locationsにリンクがなく、pathもnullまたは空の本
+  const result = await dbQuery.run(`
+    DELETE FROM books 
+    WHERE path IS NULL OR path = ''
+    AND id NOT IN (SELECT DISTINCT book_id FROM book_locations)
+  `);
+  console.log(`${result.changes}件の孤児メタデータを削除しました。`);
+  return result.changes;
+}
+
+/**
+ * ファイルが存在しないロケーションを削除（CAS用）
+ * 指定されたベースパス配下のロケーションで、実際のファイルがないものを削除
+ */
+export async function deleteOrphanLocations(basePaths: string[]): Promise<number> {
+  const fs = await import('fs');
+  const pathModule = await import('path');
+
+  let deletedCount = 0;
+
+  for (const basePath of basePaths) {
+    const locations = await dbQuery.all<any>(`
+      SELECT * FROM book_locations WHERE base_path = ?
+    `, [basePath]);
+
+    for (const loc of locations) {
+      const fullPath = pathModule.default.join(loc.base_path, loc.relative_path);
+      if (!fs.existsSync(fullPath)) {
+        await dbQuery.run('DELETE FROM book_locations WHERE id = ?', [loc.id]);
+        deletedCount++;
+      }
+    }
+  }
+
+  console.log(`${deletedCount}件の無効なロケーションを削除しました。`);
+  return deletedCount;
 }

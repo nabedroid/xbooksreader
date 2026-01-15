@@ -7,7 +7,6 @@ import sharp from 'sharp';
 import * as BookModel from '../database/models/Book';
 import * as TagModel from '../database/models/Tag';
 import * as BookmarkModel from '../database/models/Bookmark';
-import * as Scanner from '../services/scanner';
 import * as ImageLoader from '../services/imageLoader';
 import * as BackupService from '../services/backupService';
 import { searchWebMetadata } from '../services/metadataScraper';
@@ -58,6 +57,13 @@ export function registerIpcHandlers() {
     return BookModel.getMetadataList(field);
   });
 
+  // デッドリンク削除 (CAS用)
+  ipcMain.handle('books:deleteOrphans', async (_event, basePaths: string[]) => {
+    const orphanBooks = await BookModel.deleteOrphanBooks();
+    const orphanLocations = await BookModel.deleteOrphanLocations(basePaths);
+    return { orphanBooks, orphanLocations };
+  });
+
   // タグの操作
   ipcMain.handle('tags:getAll', () => {
     return TagModel.getAllTags();
@@ -97,13 +103,27 @@ export function registerIpcHandlers() {
   });
 
   // スキャン操作
-  ipcMain.handle('scanner:start', async (event, paths: string[], mode: 'add' | 'sync', options: any) => {
+  ipcMain.handle('scanner:start', async (event, paths: string[], _mode: 'add' | 'sync', _options: any) => {
     const window = BrowserWindow.fromWebContents(event.sender);
-    return Scanner.scanDirectories(paths, mode, options, window);
+    const { smartScan } = await import('../services/smartScanner');
+    // CAS対応のスマートスキャンを実行
+    const stats = await smartScan(paths, window ?? undefined);
+    // 戻り値を旧スキャナーの期待値（追加された冊数）に合わせるか、
+    // 全体のブック数に合わせるか検討が必要だが、一旦 stats.added を返す
+    return stats.added;
   });
 
   ipcMain.handle('scanner:cancel', () => {
-    return Scanner.cancelScan();
+    // smartScannerにはまだキャンセル機能がないため、一旦何もしないか
+    // 将来的に実装する
+    return;
+  });
+
+  // スマートスキャン (CAS対応) - 明示的な呼び出し用
+  ipcMain.handle('scanner:smartScan', async (event, paths: string[]) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    const { smartScan } = await import('../services/smartScanner');
+    return smartScan(paths, window ?? undefined);
   });
 
   // 画像読み込み

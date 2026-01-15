@@ -50,9 +50,25 @@ export async function getBookPages(bookId: number): Promise<string[]> {
     throw new Error('本が見つかりません');
   }
 
-  return book.type === 'folder'
-    ? getPageListFromFolder(book.path)
-    : getPageListFromZip(book.path);
+  return getPageListFromPath(book.path, book.type as 'folder' | 'zip');
+}
+
+/**
+ * パスから画像を読み込む（DB未登録用）
+ */
+export async function loadImageFromPath(fsPath: string, type: 'folder' | 'zip', pageNumber: number): Promise<Buffer> {
+  return type === 'folder'
+    ? await loadImageFromFolder(fsPath, pageNumber)
+    : await loadImageFromZip(fsPath, pageNumber);
+}
+
+/**
+ * パスからページリストを取得（DB未登録用）
+ */
+export async function getPageListFromPath(fsPath: string, type: 'folder' | 'zip'): Promise<string[]> {
+  return type === 'folder'
+    ? getPageListFromFolder(fsPath)
+    : getPageListFromZip(fsPath);
 }
 
 /**

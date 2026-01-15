@@ -39,7 +39,7 @@ export default function WebSearchModal({ initialQuery, onClose, onApply }: WebSe
       }
     } catch (error) {
       console.error('Search failed:', error);
-      alert('検索中にエラーが発生しました');
+      await window.electronAPI.utils.showAlert('検索中にエラーが発生しました');
     } finally {
       setIsLoading(false);
     }

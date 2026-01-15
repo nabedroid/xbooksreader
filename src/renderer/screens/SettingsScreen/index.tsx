@@ -74,10 +74,10 @@ export default function SettingsScreen() {
       const count = await window.electronAPI.scanner.start(scanPaths, scanMode, {
         enabled: autoExtractMetadata,
       });
-      alert(`スキャン完了: ${count}冊の本を処理しました`);
+      await window.electronAPI.utils.showAlert(`スキャン完了: ${count}冊の本を処理しました`);
     } catch (error) {
       console.error('スキャンエラー:', error);
-      alert('スキャン中にエラーが発生しました');
+      await window.electronAPI.utils.showAlert('スキャン中にエラーが発生しました');
     } finally {
       setIsScanning(false);
     }
@@ -89,15 +89,39 @@ export default function SettingsScreen() {
   };
 
   const handleExportMetadata = async () => {
-    alert('エクスポート機能は実装予定です');
+    await window.electronAPI.utils.showAlert('エクスポート機能は実装予定です');
   };
 
   const handleImportMetadata = async () => {
-    alert('インポート機能は実装予定です');
+    await window.electronAPI.utils.showAlert('インポート機能は実装予定です');
   };
 
   const handleCreateBackup = async () => {
-    alert('バックアップ機能は実装予定です');
+    await window.electronAPI.utils.showAlert('バックアップ機能は実装予定です');
+  };
+
+  const handleDeleteOrphans = async () => {
+    if (scanPaths.length === 0) {
+      await window.electronAPI.utils.showAlert('スキャン対象フォルダを追加してください');
+      return;
+    }
+
+    const confirmed = await window.electronAPI.utils.showConfirm(
+      'デッドリンク（ファイルが存在しない登録）を削除しますか？\n\n' +
+      '・ファイルが見つからないロケーション情報\n' +
+      '・ロケーションのないメタデータ\n\n' +
+      'この操作は取り消せません。'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const result = await window.electronAPI.books.deleteOrphans(scanPaths);
+      await window.electronAPI.utils.showAlert(`削除完了:\n・孤児メタデータ: ${result.orphanBooks}件\n・無効なロケーション: ${result.orphanLocations}件`);
+    } catch (error) {
+      console.error('デッドリンク削除エラー:', error);
+      await window.electronAPI.utils.showAlert('削除中にエラーが発生しました');
+    }
   };
 
   return (
@@ -226,6 +250,18 @@ export default function SettingsScreen() {
             </button>
             <button onClick={handleCreateBackup} className={styles.primaryButton}>
               データベースをバックアップ
+            </button>
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <h2>メンテナンス</h2>
+          <p className={styles.hint}>
+            デッドリンク（存在しないファイルへの参照）を削除します。
+          </p>
+          <div className={styles.actions}>
+            <button onClick={handleDeleteOrphans} className={styles.dangerButton}>
+              デッドリンクを削除
             </button>
           </div>
         </section>

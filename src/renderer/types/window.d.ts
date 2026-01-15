@@ -18,6 +18,7 @@ declare global {
         incrementReadCount: (id: number) => Promise<void>;
         getMetadataList: (field: 'series' | 'author' | 'circle' | 'original_work' | 'characters') => Promise<string[]>;
         getCount: (filter: SearchFilter) => Promise<number>;
+        deleteOrphans: (basePaths: string[]) => Promise<{ orphanBooks: number; orphanLocations: number }>;
       };
 
       // タグの操作
@@ -41,6 +42,7 @@ declare global {
       scanner: {
         start: (paths: string[], mode: 'add' | 'sync', options: MetadataExtractionOptions) => Promise<number>;
         cancel: () => Promise<void>;
+        smartScan: (paths: string[]) => Promise<{ added: number; updated: number; removed: number }>;
         onProgress: (callback: (progress: ScanProgress) => void) => void;
       };
 
