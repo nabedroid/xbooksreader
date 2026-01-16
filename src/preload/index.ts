@@ -21,6 +21,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     deleteOrphans: (basePaths: string[]) => ipcRenderer.invoke('books:deleteOrphans', basePaths),
   },
 
+  // 整理整頓の操作
+  organizer: {
+    preview: (template: string) => ipcRenderer.invoke('organizer:preview', template),
+    execute: (items: any[]) => ipcRenderer.invoke('organizer:execute', items),
+  },
+
   // タグの操作
   tags: {
     getAll: () => ipcRenderer.invoke('tags:getAll'),

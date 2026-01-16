@@ -191,7 +191,7 @@ async function processBook(
       const pageCount = await getPageCount(bookPath, type);
 
       // サムネイル再生成
-      let thumbnail = existing.thumbnail; // 文字列ならBufferに戻す等の処理が必要だが、モデル上はBuffer|null
+      let thumbnail: string | Buffer | null = existing.thumbnail;
       try {
         // nullでなければBufferとして扱う（モデル定義依存）
         // ここでは単純に再生成を試みる

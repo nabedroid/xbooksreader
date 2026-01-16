@@ -11,6 +11,8 @@ import * as ImageLoader from '../services/imageLoader';
 import * as BackupService from '../services/backupService';
 import { searchWebMetadata } from '../services/metadataScraper';
 import { convertImages, ConvertOptions } from '../services/imageConverter';
+import { smartScan } from '../services/smartScanner';
+import { previewReorganize, executeReorganize } from '../services/organizerService';
 
 /**
  * IPCハンドラーを登録
@@ -105,7 +107,6 @@ export function registerIpcHandlers() {
   // スキャン操作
   ipcMain.handle('scanner:start', async (event, paths: string[], _mode: 'add' | 'sync', _options: any) => {
     const window = BrowserWindow.fromWebContents(event.sender);
-    const { smartScan } = await import('../services/smartScanner');
     // CAS対応のスマートスキャンを実行
     const stats = await smartScan(paths, window ?? undefined);
     // 戻り値を旧スキャナーの期待値（追加された冊数）に合わせるか、
@@ -122,7 +123,6 @@ export function registerIpcHandlers() {
   // スマートスキャン (CAS対応) - 明示的な呼び出し用
   ipcMain.handle('scanner:smartScan', async (event, paths: string[]) => {
     const window = BrowserWindow.fromWebContents(event.sender);
-    const { smartScan } = await import('../services/smartScanner');
     return smartScan(paths, window ?? undefined);
   });
 
@@ -218,6 +218,15 @@ export function registerIpcHandlers() {
       title: '通知',
       message: message,
     });
+  });
+
+  // 整理整頓機能
+  ipcMain.handle('organizer:preview', async (_event, template: string) => {
+    return previewReorganize(template);
+  });
+
+  ipcMain.handle('organizer:execute', async (_event, items: any[]) => {
+    return executeReorganize(items);
   });
 
   console.log('IPCハンドラーを登録しました');

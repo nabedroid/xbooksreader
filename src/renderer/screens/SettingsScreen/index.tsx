@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSettingsStore } from '@/renderer/store/useSettingsStore';
 import type { ScanProgress } from '@/types';
 import styles from './SettingsScreen.module.css';
+import ReorganizeModal from '@/renderer/components/modals/ReorganizeModal';
 
 export default function SettingsScreen() {
   const {
@@ -24,6 +25,7 @@ export default function SettingsScreen() {
     status: 'scanning'
   });
   const [scanMode, setScanMode] = useState<'add' | 'sync'>('add');
+  const [showReorganizeModal, setShowReorganizeModal] = useState(false);
 
   useEffect(() => {
     // メニューからのアクションをリッスン
@@ -263,6 +265,9 @@ export default function SettingsScreen() {
             <button onClick={handleDeleteOrphans} className={styles.dangerButton}>
               デッドリンクを削除
             </button>
+            <button onClick={() => setShowReorganizeModal(true)}>
+              ライブラリの整理整頓
+            </button>
           </div>
         </section>
 
@@ -314,6 +319,9 @@ export default function SettingsScreen() {
           </table>
         </section>
       </div>
+      {showReorganizeModal && (
+        <ReorganizeModal onClose={() => setShowReorganizeModal(false)} />
+      )}
     </div>
   );
 }

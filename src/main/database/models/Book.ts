@@ -2,6 +2,8 @@
  * 本（Book）モデル
  */
 import { dbQuery } from '../db';
+import path from 'path';
+import fs from 'fs';
 import type { Book, BookInput, SearchFilter } from '@/types';
 
 /**
@@ -144,8 +146,7 @@ async function mapBook(row: any): Promise<Book> {
 
     if (location) {
       // フルパスを構築
-      const path = await import('path');
-      resolvedPath = path.default.join(location.base_path, location.relative_path);
+      resolvedPath = path.join(location.base_path, location.relative_path);
       // typeはパスから推測
       resolvedType = resolvedPath.toLowerCase().endsWith('.zip') ? 'zip' : 'folder';
     }
@@ -432,23 +433,6 @@ export async function getMetadataList(field: 'series' | 'author' | 'circle' | 'o
   return rows.map(r => r.name);
 }
 
-/**
- * 旧データから新メタデータテーブルへ移行する (1回限り)
- */
-export async function migrateOldMetadata() {
-  const books = await dbQuery.all<any>('SELECT * FROM books');
-  console.log(`${books.length}件の本のメタデータを移行中...`);
-
-  for (const book of books) {
-    if (book.series) await setBookMetadata(book.id, 'series', parseMultiValue(book.series));
-    if (book.author) await setBookMetadata(book.id, 'author', parseMultiValue(book.author));
-    if (book.circle) await setBookMetadata(book.id, 'circle', parseMultiValue(book.circle));
-    if (book.original_work) await setBookMetadata(book.id, 'original_work', parseMultiValue(book.original_work));
-    if (book.characters) await setBookMetadata(book.id, 'characters', parseMultiValue(book.characters));
-  }
-
-  console.log('メタデータの移行が完了しました。');
-}
 
 /**
  * ロケーションのない孤児メタデータを削除（CAS用）
@@ -470,9 +454,6 @@ export async function deleteOrphanBooks(): Promise<number> {
  * 指定されたベースパス配下のロケーションで、実際のファイルがないものを削除
  */
 export async function deleteOrphanLocations(basePaths: string[]): Promise<number> {
-  const fs = await import('fs');
-  const pathModule = await import('path');
-
   let deletedCount = 0;
 
   for (const basePath of basePaths) {
@@ -481,7 +462,7 @@ export async function deleteOrphanLocations(basePaths: string[]): Promise<number
     `, [basePath]);
 
     for (const loc of locations) {
-      const fullPath = pathModule.default.join(loc.base_path, loc.relative_path);
+      const fullPath = path.join(loc.base_path, loc.relative_path);
       if (!fs.existsSync(fullPath)) {
         await dbQuery.run('DELETE FROM book_locations WHERE id = ?', [loc.id]);
         deletedCount++;
