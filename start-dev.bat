@@ -1,15 +1,10 @@
 @echo off
-rem ポータブル nodejs へのパスを通した Windows Terminal を複数起動するスクリプト
+rem ポータブル nodejs へのパスを通した cmd を起動するスクリプト
 
-set DIR=%~dp0
-rem 末尾の \ を削除（残しておくと後続処理で " がエスケープされてエラーになる）
-set DIR=%DIR:~0,-1%
-set NODE_PATH=%DIR%\tools\node
+set DIR="%~dp0"
+set DIR="%DIR:~0,-1%"
+set NODE_DIR="%DIR%\tools\node"
 
-rem PowerShell側のコマンド（;はエスケープする）
-set SHELL_CMD=powershell -NoExit -ExecutionPolicy Bypass -Command "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8\; $env:PATH='%NODE_PATH%\;'+$env:PATH"
+set CMD_STR=chcp 65001 ^& cd /d \"%DIR%\" ^& set \"PATH=%NODE_DIR%;%%PATH%%\"
 
-REM Windows Terminal を起動。
-wt           -d "%DIR%" %SHELL_CMD%^
-; split-pane -d "%DIR%" %SHELL_CMD%^
-; split-pane -d "%DIR%" %SHELL_CMD%
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process cmd.exe -Verb RunAs -ArgumentList '/k %CMD_STR%'"

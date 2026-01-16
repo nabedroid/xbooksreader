@@ -8,10 +8,11 @@ files:
   - dist-electron
 win:
   target:
-    - target: portable
+    - target: zip
       arch:
         - x64
   artifactName: xbooksreader.${ext}
+  icon: build/icon.png
 portable:
   artifactName: xbooksreader.exe
 linux: null

@@ -21,6 +21,17 @@ declare global {
         deleteOrphans: (basePaths: string[]) => Promise<{ orphanBooks: number; orphanLocations: number }>;
       };
 
+      organizer: {
+        preview: (template: string) => Promise<{
+          items: any[];
+          total: number;
+          conflicts: number;
+          errors: number;
+          notConnectedPorts: string[];
+        }>;
+        execute: (items: any[]) => Promise<{ success: number; failed: number }>;
+      };
+
       // タグの操作
       tags: {
         getAll: () => Promise<Tag[]>;
