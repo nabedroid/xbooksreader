@@ -1,0 +1,45 @@
+name: Build and Release Standalone EXE
+
+on:
+  push:
+    # v0.1.0 のようなセマンティックバージョニング形式のタグがプッシュされた時に実行
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+    # 手動実行も可能にする
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Standalone EXE
+        # package.json の build:win スクリプトを実行
+        # これにより release/0.1.0/xbooksreader.exe が生成される想定
+        run: npm run build:win
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # 生成された zip ファイルを直接指定
+          files: dist-release/xbooksreader.zip
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

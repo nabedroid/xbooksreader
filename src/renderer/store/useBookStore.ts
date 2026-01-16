@@ -2,6 +2,7 @@
  * 本の状態管理ストア
  */
 import { create } from 'zustand';
+import { useTabStore } from './useTabStore';
 import type { Book, SearchFilter } from '@/types';
 
 interface BookStore {
@@ -11,6 +12,7 @@ interface BookStore {
   currentPage: number;
   searchFilter: SearchFilter;
   isLoading: boolean;
+  scrollPosition: number;
 
   // アクション
   setBooks: (books: Book[]) => void;
@@ -18,6 +20,7 @@ interface BookStore {
   setCurrentPage: (page: number) => void;
   setSearchFilter: (filter: SearchFilter) => void;
   setLoading: (loading: boolean) => void;
+  setScrollPosition: (position: number) => void;
 
   // 非同期アクション
   loadBooks: () => Promise<void>;
@@ -30,8 +33,12 @@ export const useBookStore = create<BookStore>((set, get) => ({
   books: [],
   selectedBook: null,
   currentPage: 0,
-  searchFilter: {},
+  searchFilter: {
+    sortBy: 'created_at',
+    sortOrder: 'desc',
+  },
   isLoading: false,
+  scrollPosition: 0,
 
   // アクション
   setBooks: (books) => set({ books }),
@@ -39,12 +46,15 @@ export const useBookStore = create<BookStore>((set, get) => ({
   setCurrentPage: (page) => set({ currentPage: page }),
   setSearchFilter: (filter) => set({ searchFilter: filter }),
   setLoading: (loading) => set({ isLoading: loading }),
+  setScrollPosition: (position) => set({ scrollPosition: position }),
 
   // 非同期アクション
   loadBooks: async () => {
     set({ isLoading: true });
     try {
-      const books = await window.electronAPI.books.getAll();
+      // フィルター（ソート) を適用して全取得するために search を使う
+      const filter = get().searchFilter;
+      const books = await window.electronAPI.books.search(filter);
       set({ books, isLoading: false });
     } catch (error) {
       console.error('本の読み込みエラー:', error);
@@ -77,7 +87,6 @@ export const useBookStore = create<BookStore>((set, get) => ({
       }
 
       // TabStore側も同期 (ここが重要)
-      const { useTabStore } = await import('./useTabStore');
       useTabStore.getState().updateBookInTabs(updatedBook);
     } catch (error) {
       console.error('本の更新エラー:', error);

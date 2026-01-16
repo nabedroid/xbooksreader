@@ -28,7 +28,6 @@ export const router = createHashRouter([
   },
 ], {
   future: {
-    v7_startTransition: true,
     v7_relativeSplatPath: true,
   },
 });

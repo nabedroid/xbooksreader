@@ -1,33 +1,45 @@
-/**
- * 本棚画面
- */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBookStore } from '@/renderer/store/useBookStore';
 import { useTabStore } from '@/renderer/store/useTabStore';
+import { useSettingsStore } from '@/renderer/store/useSettingsStore';
 import SearchPanel from '@/renderer/components/panels/SearchPanel';
 import ThumbnailGrid from '@/renderer/components/panels/ThumbnailGrid';
 import type { SearchFilter } from '@/types';
 import styles from './BookshelfScreen.module.css';
 
-export type ThumbnailGridSize = 'small' | 'medium' | 'large';
-
 export default function BookshelfScreen() {
-  const { books, isLoading, loadBooks, searchBooks } = useBookStore();
+  const { books, isLoading, loadBooks, searchBooks, searchFilter, scrollPosition, setScrollPosition } = useBookStore();
+  const { gridSize, setGridSize } = useSettingsStore();
   const { openTab } = useTabStore();
   const navigate = useNavigate();
-  const [sortBy, setSortBy] = useState<'title' | 'created_at' | 'updated_at' | 'last_read_at' | 'rating' | 'read_count'>('created_at');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [gridSize, setGridSize] = useState<ThumbnailGridSize>('large');
+  const mainRef = useRef<HTMLElement>(null);
+
+  const sortBy = searchFilter.sortBy || 'created_at';
+  const sortOrder = searchFilter.sortOrder || 'desc';
 
   useEffect(() => {
-    // 検索フィルターがない場合のみ初期読み込みを行う
-    // (詳細画面からの遷移時など、すでにフィルターがある場合はその結果を優先する)
-    const { searchFilter } = useBookStore.getState();
-    if (Object.keys(searchFilter).length === 0) {
+    // データがない場合のみ初期読み込みを行う
+    if (books.length === 0) {
       loadBooks();
     }
   }, [loadBooks]);
+
+  // スクロール位置の復元
+  useEffect(() => {
+    if (!isLoading && mainRef.current && scrollPosition > 0) {
+      // DOMのレンダリングを待つために少し遅延させる（必要に応じて）
+      requestAnimationFrame(() => {
+        if (mainRef.current) {
+          mainRef.current.scrollTop = scrollPosition;
+        }
+      });
+    }
+  }, [isLoading]);
+
+  const handleScroll = (e: React.UIEvent<HTMLElement>) => {
+    setScrollPosition(e.currentTarget.scrollTop);
+  };
 
   const handleBookClick = (book: any) => {
     // 閲覧回数を加算
@@ -41,15 +53,11 @@ export default function BookshelfScreen() {
   };
 
   const handleSort = (newSortBy: typeof sortBy) => {
-    const { searchFilter } = useBookStore.getState();
     if (sortBy === newSortBy) {
       // 同じ項目なら順序を反転
       const nextOrder = sortOrder === 'asc' ? 'desc' : 'asc';
-      setSortOrder(nextOrder);
       searchBooks({ ...searchFilter, sortBy: newSortBy, sortOrder: nextOrder });
     } else {
-      setSortBy(newSortBy);
-      setSortOrder('desc');
       searchBooks({ ...searchFilter, sortBy: newSortBy, sortOrder: 'desc' });
     }
   };
@@ -87,9 +95,7 @@ export default function BookshelfScreen() {
               <option value="rating">評価</option>
             </select>
             <button onClick={() => {
-              const { searchFilter } = useBookStore.getState();
               const nextOrder = sortOrder === 'asc' ? 'desc' : 'asc';
-              setSortOrder(nextOrder);
               searchBooks({ ...searchFilter, sortBy, sortOrder: nextOrder });
             }}>
               {sortOrder === 'asc' ? '↑' : '↓'}
@@ -106,13 +112,20 @@ export default function BookshelfScreen() {
           <SearchPanel
             onSearch={handleSearch}
             onClear={() => {
-              useBookStore.getState().setSearchFilter({});
+              useBookStore.getState().setSearchFilter({
+                sortBy: 'created_at',
+                sortOrder: 'desc',
+              });
               loadBooks();
             }}
           />
         </aside>
 
-        <main className={styles.main}>
+        <main
+          className={styles.main}
+          ref={mainRef}
+          onScroll={handleScroll}
+        >
           {isLoading ? (
             <div className={styles.loading}>
               <div className={styles.spinner}></div>

@@ -2,6 +2,8 @@
  * 本（Book）モデル
  */
 import { dbQuery } from '../db';
+import path from 'path';
+import fs from 'fs';
 import type { Book, BookInput, SearchFilter } from '@/types';
 
 /**
@@ -12,7 +14,7 @@ export async function createBook(input: BookInput): Promise<Book> {
     INSERT INTO books (path, type, title, rating, favorite, thumbnail, page_count)
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `, [
-    input.path,
+    input.path || null,
     input.type,
     input.title || null,
     input.rating || 0,
@@ -130,8 +132,30 @@ async function mapBook(row: any): Promise<Book> {
     getBookMetadataByType(bookId, 'characters'),
   ]);
 
+  // パスの解決: 既存のpathカラムがあればそれを使用、なければbook_locationsから取得
+  let resolvedPath = row.path;
+  let resolvedType = row.type;
+
+  if (!resolvedPath) {
+    // book_locationsからアクティブなロケーションを取得
+    const location = await dbQuery.get<any>(`
+      SELECT * FROM book_locations 
+      WHERE book_id = ? AND status = 'active' 
+      ORDER BY id ASC LIMIT 1
+    `, [bookId]);
+
+    if (location) {
+      // フルパスを構築
+      resolvedPath = path.join(location.base_path, location.relative_path);
+      // typeはパスから推測
+      resolvedType = resolvedPath.toLowerCase().endsWith('.zip') ? 'zip' : 'folder';
+    }
+  }
+
   return {
     ...row,
+    path: resolvedPath,
+    type: resolvedType,
     series,
     author,
     circle,
@@ -409,20 +433,43 @@ export async function getMetadataList(field: 'series' | 'author' | 'circle' | 'o
   return rows.map(r => r.name);
 }
 
-/**
- * 旧データから新メタデータテーブルへ移行する (1回限り)
- */
-export async function migrateOldMetadata() {
-  const books = await dbQuery.all<any>('SELECT * FROM books');
-  console.log(`${books.length}件の本のメタデータを移行中...`);
 
-  for (const book of books) {
-    if (book.series) await setBookMetadata(book.id, 'series', parseMultiValue(book.series));
-    if (book.author) await setBookMetadata(book.id, 'author', parseMultiValue(book.author));
-    if (book.circle) await setBookMetadata(book.id, 'circle', parseMultiValue(book.circle));
-    if (book.original_work) await setBookMetadata(book.id, 'original_work', parseMultiValue(book.original_work));
-    if (book.characters) await setBookMetadata(book.id, 'characters', parseMultiValue(book.characters));
+/**
+ * ロケーションのない孤児メタデータを削除（CAS用）
+ * book_locationsにリンクがなく、pathもnullの本を削除
+ */
+export async function deleteOrphanBooks(): Promise<number> {
+  // book_locationsにリンクがなく、pathもnullまたは空の本
+  const result = await dbQuery.run(`
+    DELETE FROM books 
+    WHERE path IS NULL OR path = ''
+    AND id NOT IN (SELECT DISTINCT book_id FROM book_locations)
+  `);
+  console.log(`${result.changes}件の孤児メタデータを削除しました。`);
+  return result.changes;
+}
+
+/**
+ * ファイルが存在しないロケーションを削除（CAS用）
+ * 指定されたベースパス配下のロケーションで、実際のファイルがないものを削除
+ */
+export async function deleteOrphanLocations(basePaths: string[]): Promise<number> {
+  let deletedCount = 0;
+
+  for (const basePath of basePaths) {
+    const locations = await dbQuery.all<any>(`
+      SELECT * FROM book_locations WHERE base_path = ?
+    `, [basePath]);
+
+    for (const loc of locations) {
+      const fullPath = path.join(loc.base_path, loc.relative_path);
+      if (!fs.existsSync(fullPath)) {
+        await dbQuery.run('DELETE FROM book_locations WHERE id = ?', [loc.id]);
+        deletedCount++;
+      }
+    }
   }
 
-  console.log('メタデータの移行が完了しました。');
+  console.log(`${deletedCount}件の無効なロケーションを削除しました。`);
+  return deletedCount;
 }

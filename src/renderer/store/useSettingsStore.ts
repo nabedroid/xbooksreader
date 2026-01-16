@@ -9,6 +9,7 @@ interface SettingsStore {
   autoExtractMetadata: boolean;
   displayMode: 'single' | 'spread' | 'scroll';
   theme: 'dark' | 'light';
+  gridSize: 'small' | 'medium' | 'large';
 
   // アクション
   addScanPath: (path: string) => void;
@@ -16,6 +17,7 @@ interface SettingsStore {
   setAutoExtractMetadata: (enabled: boolean) => void;
   setDisplayMode: (mode: 'single' | 'spread' | 'scroll') => void;
   setTheme: (theme: 'dark' | 'light') => void;
+  setGridSize: (size: 'small' | 'medium' | 'large') => void;
 
   // 永続化
   loadSettings: () => void;
@@ -30,6 +32,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   autoExtractMetadata: true,
   displayMode: 'single',
   theme: 'dark',
+  gridSize: 'large',
 
   // アクション
   addScanPath: (path) => {
@@ -58,6 +61,10 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
   setTheme: (theme) => {
     set({ theme });
+    get().saveSettings();
+  },
+  setGridSize: (size) => {
+    set({ gridSize: size });
     get().saveSettings();
   },
 
@@ -89,6 +96,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         autoExtractMetadata: get().autoExtractMetadata,
         displayMode: get().displayMode,
         theme: get().theme,
+        gridSize: get().gridSize,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
     } catch (error) {

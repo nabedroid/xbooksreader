@@ -18,6 +18,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     updatePath: (oldPath: string, newPath: string, dryRun: boolean) => ipcRenderer.invoke('books:updatePath', oldPath, newPath, dryRun),
     getMetadataList: (field: string) => ipcRenderer.invoke('books:getMetadataList', field),
     getCount: (filter: any) => ipcRenderer.invoke('books:getCount', filter),
+    deleteOrphans: (basePaths: string[]) => ipcRenderer.invoke('books:deleteOrphans', basePaths),
+  },
+
+  // 整理整頓の操作
+  organizer: {
+    preview: (template: string) => ipcRenderer.invoke('organizer:preview', template),
+    execute: (items: any[]) => ipcRenderer.invoke('organizer:execute', items),
   },
 
   // タグの操作
@@ -41,6 +48,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   scanner: {
     start: (paths: string[], mode: string, options: any) => ipcRenderer.invoke('scanner:start', paths, mode, options),
     cancel: () => ipcRenderer.invoke('scanner:cancel'),
+    smartScan: (paths: string[]) => ipcRenderer.invoke('scanner:smartScan', paths),
     onProgress: (callback: (progress: any) => void) => {
       ipcRenderer.on('scanner:progress', (_event, progress) => callback(progress));
     },

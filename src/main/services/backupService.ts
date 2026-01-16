@@ -2,7 +2,7 @@
  * バックアップ/エクスポートサービス
  */
 import fs from 'fs';
-import { getDatabase, dbQuery, initDatabase } from '../database/db';
+import { getDatabase, initDatabase } from '../database/db';
 import { getAllBooks, getBookByPath, updateBook, createBook } from '../database/models/Book';
 import { getBookTags, setBookTags } from '../database/models/Tag';
 import { getBookBookmarks, createBookmark } from '../database/models/Bookmark';

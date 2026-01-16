@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
-    "build:win": "tsc && vite build && electron-builder --win && rimraf release/0.1.0/* && mkdirp release/0.1.0 && powershell -Command \"Copy-Item -Path 'dist-release/*.exe' -Destination 'release/0.1.0/'\"",
+    "build:win": "tsc && vite build && electron-builder --win",
     "preview": "vite preview",
     "test:unit": "vitest",
     "test:integration": "vitest --config vitest.integration.config.ts",
