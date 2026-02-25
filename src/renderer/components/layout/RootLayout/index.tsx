@@ -6,6 +6,8 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import TabManager from '../TabManager';
 import PathReplaceModal from '../../panels/PathReplaceModal';
 import ImageConvertModal from '../../panels/ImageConvertModal';
+import ScanProgressModal from '../../modals/ScanProgressModal';
+import { useScannerStore } from '@/renderer/store/useScannerStore';
 import styles from './RootLayout.module.css';
 
 export default function RootLayout() {
@@ -26,10 +28,20 @@ export default function RootLayout() {
       setIsImageConvertModalOpen(true);
     });
 
+    const unsubScanAdd = window.electronAPI.utils.onMenuScanAdd(() => {
+      useScannerStore.getState().startScan('add');
+    });
+
+    const unsubScanSync = window.electronAPI.utils.onMenuScanSync(() => {
+      useScannerStore.getState().startScan('sync');
+    });
+
     return () => {
       unsubNavigate();
       unsubPathReplace();
       unsubImageConvert();
+      unsubScanAdd();
+      unsubScanSync();
     };
   }, [navigate]);
 
@@ -47,6 +59,7 @@ export default function RootLayout() {
         isOpen={isImageConvertModalOpen}
         onClose={() => setIsImageConvertModalOpen(false)}
       />
+      <ScanProgressModal />
     </div>
   );
 }

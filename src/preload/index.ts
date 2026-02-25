@@ -50,7 +50,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     cancel: () => ipcRenderer.invoke('scanner:cancel'),
     smartScan: (paths: string[]) => ipcRenderer.invoke('scanner:smartScan', paths),
     onProgress: (callback: (progress: any) => void) => {
-      ipcRenderer.on('scanner:progress', (_event, progress) => callback(progress));
+      const subscription = (_event: any, progress: any) => callback(progress);
+      ipcRenderer.on('scanner:progress', subscription);
+      return () => ipcRenderer.removeListener('scanner:progress', subscription);
     },
   },
 
@@ -100,6 +102,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
       const subscription = () => callback();
       ipcRenderer.on('menu:open-image-convert', subscription);
       return () => ipcRenderer.removeListener('menu:open-image-convert', subscription);
+    },
+    onMenuScanAdd: (callback: () => void) => {
+      const subscription = () => callback();
+      ipcRenderer.on('menu:scan-add', subscription);
+      return () => ipcRenderer.removeListener('menu:scan-add', subscription);
+    },
+    onMenuScanSync: (callback: () => void) => {
+      const subscription = () => callback();
+      ipcRenderer.on('menu:scan-sync', subscription);
+      return () => ipcRenderer.removeListener('menu:scan-sync', subscription);
     },
     showConfirm: (message: string) => ipcRenderer.invoke('utils:showConfirm', message),
     showAlert: (message: string) => ipcRenderer.invoke('utils:showAlert', message),

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSettingsStore } from '@/renderer/store/useSettingsStore';
-import type { ScanProgress } from '@/types';
+import { useScannerStore } from '@/renderer/store/useScannerStore';
 import styles from './SettingsScreen.module.css';
 import ReorganizeModal from '@/renderer/components/modals/ReorganizeModal';
 
@@ -17,14 +17,8 @@ export default function SettingsScreen() {
     setTheme,
   } = useSettingsStore();
 
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanProgress, setScanProgress] = useState<ScanProgress>({
-    current: 0,
-    total: 0,
-    currentPath: '',
-    status: 'scanning'
-  });
-  const [scanMode, setScanMode] = useState<'add' | 'sync'>('add');
+  const { isScanning, scanMode, setScanMode, startScan, startSmartScan } = useScannerStore();
+
   const [showReorganizeModal, setShowReorganizeModal] = useState(false);
 
   useEffect(() => {
@@ -50,44 +44,6 @@ export default function SettingsScreen() {
     if (confirm(`このフォルダをスキャン対象から削除しますか？\n${path}`)) {
       removeScanPath(path);
     }
-  };
-
-  const handleStartScan = async () => {
-    if (scanPaths.length === 0) {
-      alert('スキャン対象フォルダを追加してください');
-      return;
-    }
-
-    if (scanMode === 'sync') {
-      if (!confirm('同期モードを実行します。削除されたファイルや構成が変更されたフォルダはデータベースから更新または削除されます。\nよろしいですか？')) {
-        return;
-      }
-    }
-
-    setIsScanning(true);
-    setScanProgress({ current: 0, total: 0, currentPath: '', status: 'scanning' });
-
-    // 進捗を監視
-    window.electronAPI.scanner.onProgress((progress) => {
-      setScanProgress(progress);
-    });
-
-    try {
-      const count = await window.electronAPI.scanner.start(scanPaths, scanMode, {
-        enabled: autoExtractMetadata,
-      });
-      await window.electronAPI.utils.showAlert(`スキャン完了: ${count}冊の本を処理しました`);
-    } catch (error) {
-      console.error('スキャンエラー:', error);
-      await window.electronAPI.utils.showAlert('スキャン中にエラーが発生しました');
-    } finally {
-      setIsScanning(false);
-    }
-  };
-
-  const handleCancelScan = async () => {
-    await window.electronAPI.scanner.cancel();
-    setIsScanning(false);
   };
 
   const handleExportMetadata = async () => {
@@ -189,30 +145,18 @@ export default function SettingsScreen() {
 
           <div className={styles.actions}>
             {!isScanning ? (
-              <button onClick={handleStartScan} className={styles.primaryButton}>
+              <button onClick={() => startScan()} className={styles.primaryButton}>
                 スキャン開始
               </button>
             ) : (
-              <>
-                <div className={styles.progress}>
-                  <p>
-                    スキャン中: {scanProgress.current} / {scanProgress.total}
-                    {scanProgress.status === 'processing' && ' (処理中...)'}
-                  </p>
-                  <div className={styles.progressBar}>
-                    <div
-                      className={styles.progressFill}
-                      style={{
-                        width: scanProgress.total > 0 ? `${(scanProgress.current / scanProgress.total) * 100}%` : '0%',
-                      }}
-                    />
-                  </div>
-                </div>
-                <button onClick={handleCancelScan} className={styles.dangerButton}>
-                  キャンセル
-                </button>
-              </>
+              <button disabled className={styles.primaryButton}>
+                スキャン実行中...
+              </button>
             )}
+
+            <button className={styles.secondaryButton} onClick={() => startSmartScan()}>
+              自動整理スキャン
+            </button>
           </div>
         </section>
 

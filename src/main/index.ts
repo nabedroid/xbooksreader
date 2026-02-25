@@ -101,6 +101,23 @@ function createWindow() {
         ]
       },
       {
+        label: '検索',
+        submenu: [
+          {
+            label: '本棚検索（追加）',
+            click: () => {
+              mainWindow?.webContents.send('menu:scan-add');
+            }
+          },
+          {
+            label: '本棚検索（同期）',
+            click: () => {
+              mainWindow?.webContents.send('menu:scan-sync');
+            }
+          }
+        ]
+      },
+      {
         label: 'ウィンドウ',
         submenu: [
           { role: 'minimize' },
