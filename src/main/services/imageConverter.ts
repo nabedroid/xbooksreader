@@ -8,6 +8,7 @@ import sharp from 'sharp';
 import archiver from 'archiver';
 import { BrowserWindow } from 'electron';
 import { dbQuery } from '../database/db';
+import { hasImagesOnly } from './fileScannerUtils';
 
 export interface ConvertOptions {
   targetPath: string;
@@ -40,7 +41,7 @@ export async function convertImages(
   const stats = { success: 0, failed: 0 };
 
   // 対象フォルダのリストアップ
-  const directories = recursive ? getAllDirectories(targetPath) : [targetPath];
+  const directories = recursive ? await getAllDirectories(targetPath) : [targetPath];
 
   let totalImages = 0;
   // 進捗計算用に画像数をカウント（概算）
@@ -186,31 +187,26 @@ export async function convertImages(
 /**
  * サブディレクトリを再帰的に取得
  */
-function getAllDirectories(dirPath: string): string[] {
+async function getAllDirectories(dirPath: string): Promise<string[]> {
   let dirs: string[] = [];
   try {
     const files = fs.readdirSync(dirPath);
     for (const file of files) {
       const fullPath = path.join(dirPath, file);
       if (fs.statSync(fullPath).isDirectory()) {
-        dirs = dirs.concat(getAllDirectories(fullPath));
+        dirs = dirs.concat(await getAllDirectories(fullPath));
       }
     }
 
     // 画像が含まれるフォルダなら自分自身も追加（画像変換の対象とするため）
     // ルートフォルダにも画像があるかもしれない
-    if (dirs.length === 0 || hasImage(dirPath)) {
+    if (dirs.length === 0 || await hasImagesOnly(dirPath)) {
       dirs.push(dirPath);
     }
   } catch (e) {
     console.error(e);
   }
   return dirs;
-}
-
-function hasImage(dirPath: string): boolean {
-  const files = fs.readdirSync(dirPath);
-  return files.some(f => IMAGE_EXTENSIONS.includes(path.extname(f).toLowerCase()));
 }
 
 /**

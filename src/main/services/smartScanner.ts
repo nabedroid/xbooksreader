@@ -5,6 +5,7 @@ import { calculateContentIdentity } from './contentHasher';
 import { dbQuery } from '../database/db';
 import { Book } from '../../types';
 import { BrowserWindow } from 'electron';
+import { hasImagesOnly } from './fileScannerUtils';
 
 /**
  * スマートスキャンを実行
@@ -200,7 +201,7 @@ async function getAllFiles(dirPath: string): Promise<string[]> {
   const results: string[] = [];
 
   // フォルダ自体が画像を含むかチェック
-  if (await hasImages(dirPath)) {
+  if (await hasImagesOnly(dirPath)) {
     results.push(dirPath);
     // このフォルダ自体が本なら、サブフォルダの探索は行わない（二重検出防止）
     return results;
@@ -225,14 +226,3 @@ async function getAllFiles(dirPath: string): Promise<string[]> {
   return results;
 }
 
-/**
- * 画像ファイルが含まれているかチェック
- */
-async function hasImages(dirPath: string): Promise<boolean> {
-  try {
-    const entries = fs.readdirSync(dirPath);
-    return entries.some(f => ['.jpg', '.jpeg', '.png', '.webp'].includes(path.extname(f).toLowerCase()));
-  } catch {
-    return false;
-  }
-}

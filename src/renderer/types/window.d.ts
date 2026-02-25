@@ -54,7 +54,7 @@ declare global {
         start: (paths: string[], mode: 'add' | 'sync', options: MetadataExtractionOptions) => Promise<number>;
         cancel: () => Promise<void>;
         smartScan: (paths: string[]) => Promise<{ added: number; updated: number; removed: number }>;
-        onProgress: (callback: (progress: ScanProgress) => void) => void;
+        onProgress: (callback: (progress: ScanProgress) => void) => () => void;
       };
 
       // 画像読み込み
@@ -86,6 +86,8 @@ declare global {
         onMenuAction: (callback: (action: string) => void) => () => void;
         onMenuPathReplace: (callback: () => void) => () => void;
         onMenuImageConvert: (callback: () => void) => () => void;
+        onMenuScanAdd: (callback: () => void) => () => void;
+        onMenuScanSync: (callback: () => void) => () => void;
         showConfirm: (message: string) => Promise<boolean>;
         showAlert: (message: string) => Promise<void>;
       };

@@ -9,10 +9,8 @@ import yauzl from 'yauzl';
 import { createBook, getBookByPath, getAllBooks, deleteBook, updateBook } from '../database/models/Book';
 import { generateThumbnail } from './thumbnailGenerator';
 import { extractMetadataFromPath } from './metadataExtractor';
+import { IMAGE_EXTENSIONS, hasImagesOnly } from './fileScannerUtils';
 import type { MetadataExtractionOptions, ScanProgress } from '@/types';
-
-// サポートする画像拡張子
-const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp'];
 
 // スキャン状態
 let isScanning = false;
@@ -118,8 +116,8 @@ async function scanDirectoryInternal(
         const stats = fs.statSync(item);
 
         if (stats.isDirectory()) {
-          // ディレクトリ内に画像があるかチェック
-          if (await hasImages(item)) {
+          // ディレクトリ内に画像が存在し、かつテキスト等の無関係なファイルがないかチェック
+          if (await hasImagesOnly(item)) {
             await processBook(item, 'folder', mode, options);
             booksFound++;
           }
@@ -263,21 +261,6 @@ async function getAllItems(dirPath: string): Promise<string[]> {
 
   await traverse(dirPath);
   return items;
-}
-
-/**
- * ディレクトリに画像が含まれているかチェック
- */
-async function hasImages(dirPath: string): Promise<boolean> {
-  try {
-    const entries = fs.readdirSync(dirPath);
-    return entries.some(entry => {
-      const ext = path.extname(entry).toLowerCase();
-      return IMAGE_EXTENSIONS.includes(ext);
-    });
-  } catch (error) {
-    return false;
-  }
 }
 
 /**
