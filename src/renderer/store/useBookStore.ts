@@ -13,6 +13,7 @@ interface BookStore {
   searchFilter: SearchFilter;
   isLoading: boolean;
   scrollPosition: number;
+  displayLimit: number;
 
   // アクション
   setBooks: (books: Book[]) => void;
@@ -21,6 +22,7 @@ interface BookStore {
   setSearchFilter: (filter: SearchFilter) => void;
   setLoading: (loading: boolean) => void;
   setScrollPosition: (position: number) => void;
+  setDisplayLimit: (limit: number) => void;
 
   // 非同期アクション
   loadBooks: () => Promise<void>;
@@ -39,6 +41,7 @@ export const useBookStore = create<BookStore>((set, get) => ({
   },
   isLoading: false,
   scrollPosition: 0,
+  displayLimit: 100,
 
   // アクション
   setBooks: (books) => set({ books }),
@@ -47,10 +50,11 @@ export const useBookStore = create<BookStore>((set, get) => ({
   setSearchFilter: (filter) => set({ searchFilter: filter }),
   setLoading: (loading) => set({ isLoading: loading }),
   setScrollPosition: (position) => set({ scrollPosition: position }),
+  setDisplayLimit: (limit) => set({ displayLimit: limit }),
 
   // 非同期アクション
   loadBooks: async () => {
-    set({ isLoading: true });
+    set({ isLoading: true, displayLimit: 100 });
     try {
       // フィルター（ソート) を適用して全取得するために search を使う
       const filter = get().searchFilter;
@@ -63,7 +67,7 @@ export const useBookStore = create<BookStore>((set, get) => ({
   },
 
   searchBooks: async (filter) => {
-    set({ isLoading: true, searchFilter: filter });
+    set({ isLoading: true, searchFilter: filter, displayLimit: 100 });
     try {
       const books = await window.electronAPI.books.search(filter);
       set({ books, isLoading: false });
