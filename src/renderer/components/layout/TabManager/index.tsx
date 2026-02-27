@@ -1,6 +1,7 @@
 /**
  * タブマネージャーコンポーネント
  */
+import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTabStore } from '@/renderer/store/useTabStore';
 import styles from './TabManager.module.css';
@@ -11,6 +12,45 @@ export default function TabManager() {
   const location = useLocation();
 
   const isHomeActive = location.pathname === '/';
+
+  // タブを閉じる共通処理: 遷移先に移動してからタブを閉じる
+  const handleCloseTab = (idToClose: string) => {
+    const currentTabs = useTabStore.getState().tabs;
+    const remainingTabs = currentTabs.filter(t => t.id !== idToClose);
+
+    // 先に遷移先を決定して遷移する
+    if (remainingTabs.length > 0) {
+      const nextTab = remainingTabs[remainingTabs.length - 1];
+      setActiveTab(nextTab.id);
+      navigate(`/book/${nextTab.book.id}`);
+    } else {
+      navigate('/');
+    }
+
+    // 遷移後にタブを閉じる
+    closeTab(idToClose);
+  };
+
+  // Ctrl+W によるタブ閉じショートカットのグローバルハンドリング
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+W (または Cmd+W) を検知
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'w') {
+        e.preventDefault();
+
+        // ホーム画面の場合は何もしない
+        if (isHomeActive) return;
+
+        // アクティブなタブがあれば閉じる
+        if (activeTabId) {
+          handleCloseTab(activeTabId);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeTabId, isHomeActive, closeTab, navigate]);
 
   return (
     <div className={styles.tabBar}>
@@ -40,20 +80,7 @@ export default function TabManager() {
             className={styles.closeButton}
             onClick={(e) => {
               e.stopPropagation();
-              const idToClose = tab.id;
-              closeTab(idToClose);
-
-              // 遷移処理: 閉じた後にアクティブなタブがなければ本棚へ
-              const nextActiveTabId = useTabStore.getState().activeTabId;
-              const nextTabs = useTabStore.getState().tabs;
-              if (nextActiveTabId) {
-                const nextTab = nextTabs.find(t => t.id === nextActiveTabId);
-                if (nextTab) {
-                  navigate(`/book/${nextTab.book.id}`);
-                }
-              } else {
-                navigate('/');
-              }
+              handleCloseTab(tab.id);
             }}
           >
             ×

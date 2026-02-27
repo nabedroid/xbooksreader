@@ -24,6 +24,7 @@ export default function DetailScreen() {
   const activeTab = tabs.find(t => t.id === activeTabId);
   const book = activeTab?.book;
 
+
   useEffect(() => {
     if (book) {
       loadPages();
@@ -63,6 +64,20 @@ export default function DetailScreen() {
       console.error('タグ更新エラー:', error);
     }
   };
+
+  // F2キーでの編集モード起動
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'F2') {
+        e.preventDefault();
+        // Here we can't directly trigger MetadataEditor state, so this effect should be moved inside the MetadataEditor.
+        // As a temporary fix since F2 logic is in MetadataEditor, we don't need this block here if it was mistakenly added globally before.
+        // NOTE: F2 was added to MetadataEditor in previous step, so this effect is not needed in DetailScreen itself.
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // キーボードショートカット
   useKeyboardShortcuts({

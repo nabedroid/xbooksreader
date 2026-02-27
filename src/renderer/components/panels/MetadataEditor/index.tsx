@@ -64,6 +64,19 @@ export default function MetadataEditor({ book, onUpdate, onTagsUpdate }: Metadat
     loadBookTags();
   }, [book]);
 
+  // F2キーでの編集モード起動
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'F2') {
+        e.preventDefault();
+        setIsEditing(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const loadBookTags = async () => {
     try {
       const bookTags = await window.electronAPI.tags.getBookTags(book.id);

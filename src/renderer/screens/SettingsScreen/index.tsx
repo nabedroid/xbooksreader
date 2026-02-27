@@ -248,16 +248,8 @@ export default function SettingsScreen() {
                 <td>しおり追加</td>
               </tr>
               <tr>
-                <td>Ctrl + T</td>
-                <td>新しいタブ</td>
-              </tr>
-              <tr>
                 <td>Ctrl + W</td>
                 <td>タブを閉じる</td>
-              </tr>
-              <tr>
-                <td>Ctrl + F</td>
-                <td>検索</td>
               </tr>
             </tbody>
           </table>

@@ -15,9 +15,7 @@ interface ShortcutHandlers {
   onZoomReset?: () => void;
   onToggleFullscreen?: () => void;
   onAddBookmark?: () => void;
-  onNewTab?: () => void;
   onCloseTab?: () => void;
-  onSearch?: () => void;
 }
 
 export function useKeyboardShortcuts(handlers: ShortcutHandlers) {
@@ -36,17 +34,9 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers) {
       // Ctrl/Cmd キーの組み合わせ
       if (e.ctrlKey || e.metaKey) {
         switch (e.key) {
-          case 't':
-            e.preventDefault();
-            handlers.onNewTab?.();
-            break;
           case 'w':
             e.preventDefault();
             handlers.onCloseTab?.();
-            break;
-          case 'f':
-            e.preventDefault();
-            handlers.onSearch?.();
             break;
           case 'ArrowLeft':
             e.preventDefault();

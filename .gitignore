@@ -12,3 +12,4 @@ dist-release
 /tmp*
 /convert.bat
 /convert.js
+/.vs
