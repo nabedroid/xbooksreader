@@ -112,6 +112,7 @@ async function loadImageFromZip(zipPath: string, pageNumber: number): Promise<Bu
               zipfile2.openReadStream(entry, (err3: any, readStream: any) => {
                 if (err3) {
                   reject(err3);
+                  zipfile2.close();
                   return;
                 }
 
@@ -119,8 +120,12 @@ async function loadImageFromZip(zipPath: string, pageNumber: number): Promise<Bu
                 readStream.on('data', (chunk: Buffer) => chunks.push(chunk));
                 readStream.on('end', () => {
                   resolve(Buffer.concat(chunks));
+                  zipfile2.close();
                 });
-                readStream.on('error', reject);
+                readStream.on('error', (err: any) => {
+                  reject(err);
+                  zipfile2.close();
+                });
               });
             } else {
               zipfile2.readEntry();
