@@ -118,12 +118,12 @@ async function scanDirectoryInternal(
         if (stats.isDirectory()) {
           // ディレクトリ内に画像が存在し、かつテキスト等の無関係なファイルがないかチェック
           if (await hasImagesOnly(item)) {
-            await processBook(item, 'folder', mode, options);
+            await processBook(item, 'folder', mode, options, dirPath);
             booksFound++;
           }
         } else if (item.toLowerCase().endsWith('.zip')) {
           // ZIPファイル
-          await processBook(item, 'zip', mode, options);
+          await processBook(item, 'zip', mode, options, dirPath);
           booksFound++;
         }
       } catch (error) {
@@ -176,7 +176,8 @@ async function processBook(
   bookPath: string,
   type: 'folder' | 'zip',
   mode: 'add' | 'sync',
-  options: MetadataExtractionOptions
+  options: MetadataExtractionOptions,
+  baseDir: string
 ) {
   // 既に存在するかチェック
   const existing = await getBookByPath(bookPath);
@@ -208,7 +209,7 @@ async function processBook(
 
   // 新規追加
   const metadata = options.enabled
-    ? extractMetadataFromPath(bookPath)
+    ? extractMetadataFromPath(bookPath, baseDir)
     : {};
 
   const pageCount = await getPageCount(bookPath, type);

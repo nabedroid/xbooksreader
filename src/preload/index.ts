@@ -48,7 +48,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   scanner: {
     start: (paths: string[], mode: string, options: any) => ipcRenderer.invoke('scanner:start', paths, mode, options),
     cancel: () => ipcRenderer.invoke('scanner:cancel'),
-    smartScan: (paths: string[]) => ipcRenderer.invoke('scanner:smartScan', paths),
+    smartScan: (paths: string[], options: any) => ipcRenderer.invoke('scanner:smartScan', paths, options),
     onProgress: (callback: (progress: any) => void) => {
       const subscription = (_event: any, progress: any) => callback(progress);
       ipcRenderer.on('scanner:progress', subscription);

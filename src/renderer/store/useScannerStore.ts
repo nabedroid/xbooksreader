@@ -97,7 +97,10 @@ export const useScannerStore = create<ScannerStore>((set, get) => ({
     });
 
     try {
-      const result = await window.electronAPI.scanner.smartScan(scanPaths);
+      const { autoExtractMetadata } = useSettingsStore.getState();
+      const result = await window.electronAPI.scanner.smartScan(scanPaths, {
+        enabled: autoExtractMetadata,
+      });
       await window.electronAPI.utils.showAlert(
         `自動整理完了\n\n` +
         `新規追加: ${result.added} 件\n` +
