@@ -53,7 +53,7 @@ declare global {
       scanner: {
         start: (paths: string[], mode: 'add' | 'sync', options: MetadataExtractionOptions) => Promise<number>;
         cancel: () => Promise<void>;
-        smartScan: (paths: string[]) => Promise<{ added: number; updated: number; removed: number }>;
+        smartScan: (paths: string[], options: MetadataExtractionOptions) => Promise<{ added: number; updated: number; removed: number }>;
         onProgress: (callback: (progress: ScanProgress) => void) => () => void;
       };
 

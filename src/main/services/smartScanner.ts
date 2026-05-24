@@ -7,12 +7,16 @@ import { Book } from '../../types';
 import { BrowserWindow } from 'electron';
 import { hasImagesOnly } from './fileScannerUtils';
 
+import { extractMetadataFromPath } from './metadataExtractor';
+import { MetadataExtractionOptions } from '@/types';
+
 /**
  * スマートスキャンを実行
  * 指定されたディレクトリをスキャンし、DBと同期する
  */
 export async function smartScan(
   targetDirs: string[],
+  options: MetadataExtractionOptions = { enabled: false },
   window?: BrowserWindow
 ): Promise<{ added: number; updated: number; removed: number }> {
   const stats = { added: 0, updated: 0, removed: 0 };
@@ -138,13 +142,46 @@ export async function smartScan(
         }
       } else {
         // 完全新規 -> Book作成 + Location作成
-        const title = path.basename(filePath, path.extname(filePath));
+        let title = path.basename(filePath, path.extname(filePath));
+        let series: string | undefined;
+        let characters: string[] | undefined;
+        let circle: string | undefined;
+        let author: string | undefined;
+
+        if (options.enabled) {
+          const metadata = extractMetadataFromPath(filePath, baseDir);
+          if (metadata.title) title = metadata.title;
+          series = metadata.series;
+          characters = metadata.characters;
+          circle = metadata.circle;
+          author = metadata.author;
+        }
+
         const result = await dbQuery.run(`
-            INSERT INTO books (title, phash, page_count, thumbnail, created_at, updated_at)
-            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-        `, [title, identity.phash, identity.pageCount, identity.thumbnail]);
+            INSERT INTO books (title, phash, page_count, thumbnail, series, characters, circle, author, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `, [
+          title,
+          identity.phash,
+          identity.pageCount,
+          identity.thumbnail,
+          series || null,
+          characters ? characters.join(',') : null,
+          circle || null,
+          author || null
+        ]);
 
         const newBookId = result.lastID;
+
+        // 正規化テーブルへの登録（同期的に行う）
+        if (series) await setBookMetadata(newBookId, 'series', series);
+        if (characters) {
+          for (const char of characters) {
+            await setBookMetadata(newBookId, 'characters', char);
+          }
+        }
+        if (circle) await setBookMetadata(newBookId, 'circle', circle);
+        if (author) await setBookMetadata(newBookId, 'author', author);
 
         await dbQuery.run(`
             INSERT INTO book_locations (book_id, volume_id, base_path, relative_path, status)
@@ -224,5 +261,22 @@ async function getAllFiles(dirPath: string): Promise<string[]> {
     // アクセス権限等で読めない場合
   }
   return results;
+}
+
+/**
+ * メタデータを設定（Book.tsから持ってくるか、簡易実装）
+ */
+async function setBookMetadata(bookId: number, type: string, name: string) {
+  if (!name.trim()) return;
+
+  // マスターに登録（存在しなければ）
+  await dbQuery.run('INSERT OR IGNORE INTO metadata (type, name) VALUES (?, ?)', [type, name.trim()]);
+
+  // IDを取得
+  const item = await dbQuery.get<{ id: number }>('SELECT id FROM metadata WHERE type = ? AND name = ?', [type, name.trim()]);
+  if (item) {
+    // 関連付け
+    await dbQuery.run('INSERT OR IGNORE INTO book_metadata (book_id, metadata_id) VALUES (?, ?)', [bookId, item.id]);
+  }
 }
 

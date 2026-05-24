@@ -105,10 +105,10 @@ export function registerIpcHandlers() {
   });
 
   // スキャン操作
-  ipcMain.handle('scanner:start', async (event, paths: string[], _mode: 'add' | 'sync', _options: any) => {
+  ipcMain.handle('scanner:start', async (event, paths: string[], _mode: 'add' | 'sync', options: any) => {
     const window = BrowserWindow.fromWebContents(event.sender);
     // CAS対応のスマートスキャンを実行
-    const stats = await smartScan(paths, window ?? undefined);
+    const stats = await smartScan(paths, options, window ?? undefined);
     // 戻り値を旧スキャナーの期待値（追加された冊数）に合わせるか、
     // 全体のブック数に合わせるか検討が必要だが、一旦 stats.added を返す
     return stats.added;
@@ -121,9 +121,9 @@ export function registerIpcHandlers() {
   });
 
   // スマートスキャン (CAS対応) - 明示的な呼び出し用
-  ipcMain.handle('scanner:smartScan', async (event, paths: string[]) => {
+  ipcMain.handle('scanner:smartScan', async (event, paths: string[], options: any) => {
     const window = BrowserWindow.fromWebContents(event.sender);
-    return smartScan(paths, window ?? undefined);
+    return smartScan(paths, options, window ?? undefined);
   });
 
   // 画像読み込み
